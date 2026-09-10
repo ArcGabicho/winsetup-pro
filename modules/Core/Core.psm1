@@ -11,6 +11,7 @@ $ordered = @(
     'Configuration.ps1'
     'Privilege.ps1'
     'SystemDetection.ps1'
+    'Winget.ps1'
     'UI.ps1'
     'ComponentModel.ps1'
     'Registry.ps1'
@@ -34,6 +35,8 @@ Export-ModuleMember -Function @(
     'Test-WinSetupAdmin', 'Assert-WinSetupAdmin', 'Get-WinSetupPrivilegeReport'
     # System
     'Get-WinSetupSystemInfo', 'Test-WinSetupInternet', 'Get-WinSetupDiagnostics'
+    # winget helpers
+    'Install-WinSetupWingetPackage', 'Update-WinSetupSessionPath', 'Get-WinSetupExeVersion'
     # UI
     'Write-WinSetupBanner', 'Write-WinSetupStep', 'Write-WinSetupStatusLine'
     'Write-WinSetupSummary', 'Read-WinSetupChoice', 'Confirm-WinSetupAction', 'Test-WinSetupConsole'

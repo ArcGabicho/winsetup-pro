@@ -32,6 +32,18 @@
     "enabled": false,
     "keyType": "ed25519"
   },
+  "githubCli": {
+    "gitProtocol": null
+  },
+  "dotnet": {
+    "channel": "9"
+  },
+  "node": {
+    "channel": "LTS"
+  },
+  "python": {
+    "version": "3.12"
+  },
   "fonts": [],
   "folders": [],
   "environment": {

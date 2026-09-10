@@ -8,9 +8,11 @@ you want (a **profile** or a list of **components**) and the engine works out
 what is missing and applies only that. Running it twice changes nothing the
 second time.
 
-**Status:** Phase 1 (Core engine + CLI) is implemented and tested. Application,
-developer-environment, WSL, customisation and profile modules land in later
-phases — see [CHANGELOG.md](CHANGELOG.md) and the roadmap below.
+**Status:** Phases 1–2 are implemented and tested — the Core engine/CLI plus the
+first set of application components (PowerShell 7, Windows Terminal, VS Code,
+GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop). Developer
+environment, WSL, customisation and the remaining profiles land in later phases —
+see [CHANGELOG.md](CHANGELOG.md) and the roadmap below.
 
 ---
 
@@ -192,7 +194,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | Phase | Scope | State |
 |---|---|---|
 | 1 | Core engine, CLI, logging, config, dry-run, status, journal/resume | **done** |
-| 2 | Application components (VS Code, PowerShell 7, .NET, Node, Python, Docker, …) | planned |
+| 2 | Application components: pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop | **done** |
 | 3 | Git · GitHub/Azure/AWS CLI · SSH · environment variables · folders · fonts | planned |
 | 4 | WSL 2 module | planned |
 | 5 | PowerShell profile · dotfiles · backups · post-install | planned |

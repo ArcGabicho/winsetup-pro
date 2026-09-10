@@ -53,6 +53,24 @@
         "keyType": { "type": "string", "enum": ["ed25519", "rsa", "ecdsa"] }
       }
     },
+    "githubCli": {
+      "type": "object",
+      "properties": {
+        "gitProtocol": { "type": ["string", "null"], "enum": ["ssh", "https", null] }
+      }
+    },
+    "dotnet": {
+      "type": "object",
+      "properties": { "channel": { "type": "string" } }
+    },
+    "node": {
+      "type": "object",
+      "properties": { "channel": { "type": "string", "enum": ["LTS", "Current"] } }
+    },
+    "python": {
+      "type": "object",
+      "properties": { "version": { "type": "string" } }
+    },
     "fonts": { "type": "array", "items": { "type": "string" } },
     "folders": { "type": "array", "items": { "type": "string" } },
     "environment": {

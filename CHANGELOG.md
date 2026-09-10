@@ -6,6 +6,24 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 2 — Applications (added)
+
+* **Shared winget helpers** (`modules/Core/Winget.ps1`):
+  `Install-WinSetupWingetPackage` (silent, idempotent, verifies presence on a
+  non-zero exit code and gives an elevation hint otherwise),
+  `Update-WinSetupSessionPath`, `Get-WinSetupExeVersion`.
+* **Application components** (`modules/Applications/`): `pwsh` (PowerShell 7),
+  `windows-terminal`, `vscode` (user scope), `github-cli` (optional
+  `git_protocol` config, never runs `gh auth login`), `dotnet-sdk`
+  (channel-configurable), `nodejs`, `npm` (provided-by-nodejs, `DependsOn`),
+  `pnpm`, `python` (ignores the WindowsApps alias stub), `docker-desktop`
+  (`RequiresAdmin`, restart notice).
+* `config/default.json` / `schema.json` gain `githubCli`, `dotnet`, `node`,
+  `python` blocks.
+* `minimal` and `frontend` profiles are now fully backed by real components.
+* Tests: `tests/unit/Applications.Tests.ps1` — discovery, schema validity,
+  unique ids, dependency wiring, and that every `Test` block is side-effect free.
+
 ### Phase 1 — Core (added)
 
 * **Setup Engine** (`modules/Core/`): execution context, plan resolution,
@@ -43,8 +61,9 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ### Known limitations
 
-* Only the `git` component is implemented; other profile entries are skipped
-  with a warning until Phase 2.
+* `dotnet`, `fullstack` and `enterprise` profiles still reference components that
+  arrive in Phase 3+ (`visualstudio`, `azure-cli`, `postgresql`, …); those are
+  reported and skipped, not failed.
 * `-Update` is a placeholder (`git pull`).
 * An empty JSON array read through `Get-WinSetupConfigValue` collapses to
   `$null`; callers wrap with `@()` and `-Default @()`.
