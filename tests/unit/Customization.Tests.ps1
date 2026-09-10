@@ -3,13 +3,13 @@ BeforeAll {
     Import-Module (Join-Path $script:Root 'modules\Core\Core.psm1') -Force
     Initialize-WinSetupLog -Directory (Join-Path $TestDrive 'logs') -Console $false | Out-Null
     $script:Registry = Import-WinSetupComponents -Path (Join-Path $script:Root 'modules')
-}
 
-function New-IsolatedContext {
-    param($Config)
-    $ctx = New-WinSetupContext -Root $TestDrive -Config $Config -Interactive $false -Registry $script:Registry
-    $ctx.Paths['Templates'] = Join-Path $script:Root 'templates'
-    return $ctx
+    function New-IsolatedContext {
+        param($Config)
+        $ctx = New-WinSetupContext -Root $TestDrive -Config $Config -Interactive $false -Registry $script:Registry
+        $ctx.Paths['Templates'] = Join-Path $script:Root 'templates'
+        return $ctx
+    }
 }
 
 Describe 'Phase 5 components registered' {

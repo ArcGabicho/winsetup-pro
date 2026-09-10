@@ -258,14 +258,28 @@ Contract:
 ## 17. Testing
 
 ```powershell
-Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0   # once
-pwsh -File .\tests\RunTests.ps1                                   # unit suite
+Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0 -Force -SkipPublisherCheck   # once
+
+pwsh -File .\tests\RunTests.ps1                       # unit suite (80 tests)
+pwsh -File .\tests\RunTests.ps1 -Suite all -CI        # + JUnit results in logs\
+pwsh -File .\tests\RunTests.ps1 -Coverage             # + code coverage
+$env:WINSETUP_ALLOW_INTEGRATION = '1'
+pwsh -File .\tests\RunTests.ps1 -Suite integration    # real winget install/uninstall
 ```
 
-Unit tests use `TestDrive:` and in-memory registries — they never modify the
-host. Integration tests (Phase 7) are opt-in via `WINSETUP_ALLOW_INTEGRATION=1`.
+Works on Pester 5 and 6. **Unit tests never modify the host** — they use
+`TestDrive:`, in-memory component registries, synthetic components, and restore
+any `$env:USERPROFILE` / `$global:PROFILE` redirection in `finally`. They cover:
+software detection, install idempotency (run a plan 2-3×), PATH & environment
+variables, folder creation, backups, Git config, WSL detection, dry-run, the
+error policy, and journal / `-Resume`.
 
-A network-free sanity script also exists at `tests/RunTests.ps1 -Suite unit`.
+Integration tests (`tests/integration/`, tagged `Integration`) install a real
+package and **self-skip** unless `WINSETUP_ALLOW_INTEGRATION=1`; they remove only
+what they installed.
+
+CI runs the syntax check, PSScriptAnalyzer and the unit suite on
+`windows-latest` — see `.github/workflows/ci.yml`.
 
 ## 18. Contribution
 
@@ -281,7 +295,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | **done** |
 | 5 | Modular PowerShell profile · dotfiles · consolidated backups · post-install scripts | **done** |
 | 6 | Full profile set + 15 more components (VS, JetBrains, Go, Rust, Java, CMake/Ninja, Neovim, SQL/Postgres/MySQL/Redis/Mongo) | **done** |
-| 7 | Pester unit + integration + idempotency suites | in progress |
+| 7 | 80-test Pester suite (unit + idempotency + resume), integration scaffold, GitHub Actions CI | **done** |
 | 8 | Full documentation set | in progress |
 
 ## License

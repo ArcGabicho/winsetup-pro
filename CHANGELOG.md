@@ -6,6 +6,29 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 7 — Testing (added / changed)
+
+* **80-test Pester suite** (Pester 5 or 6), all green, host-safe (TestDrive:,
+  in-memory registries, synthetic components, `$env:USERPROFILE` / `$global:PROFILE`
+  redirection restored in `finally`).
+* `tests/unit/Detection.Tests.ps1` — every one of the 40 components' `Test`
+  returns a well-formed result and is read-only (HOME dotfiles unchanged after
+  running all Tests twice).
+* `tests/unit/Idempotency.Tests.ps1` — a full engine plan run 2-3 times:
+  second run installs/configures nothing; dry-run first does not perturb it;
+  plus a real `folders` round-trip.
+* `tests/unit/Resume.Tests.ps1` — abort at a critical failure leaves an
+  incomplete journal; `-Resume` re-runs only Pending/Failed and completes;
+  already-succeeded entries are not re-run; a completed run has nothing to
+  resume; dry-run writes `last-dryrun.json` and never touches `last-run.json`.
+* `tests/integration/Winget.Integration.Tests.ps1` — real winget install +
+  idempotency of `jqlang.jq`; tagged `Integration`, self-skips unless
+  `WINSETUP_ALLOW_INTEGRATION=1`, uninstalls only what it installed.
+* `tests/RunTests.ps1` reworked: Pester 5/6 config API, `-Tag` / `-ExcludeTag`
+  / `-Coverage` / `-CI`, integration excluded from the default `unit` run.
+* `.github/workflows/ci.yml` — syntax check + PSScriptAnalyzer + unit suite on
+  `windows-latest`, JUnit results uploaded.
+
 ### Phase 6 — Profiles (added / changed)
 
 * **15 new components.** Development: `visualstudio` (admin),
