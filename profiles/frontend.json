@@ -7,10 +7,13 @@
     "windows-terminal",
     "vscode",
     "nodejs",
+    "npm",
     "pnpm",
+    "python",
     "github-cli"
   ],
   "git": { "enabled": true },
+  "powershellProfile": { "enabled": true },
   "fonts": ["CascadiaCode", "FiraCode"],
   "folders": ["Dev\\Projects", "Dev\\Experiments"]
 }

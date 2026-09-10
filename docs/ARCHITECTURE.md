@@ -170,5 +170,11 @@ so tests stay quiet. No secret is ever passed to the logger.
 * An empty JSON array read via `Get-WinSetupConfigValue` collapses to `$null`
   through PowerShell's return-value unrolling; list callers wrap with `@()` and
   pass `-Default @()`.
-* `-Profile` binds to `$Profile`, shadowing the automatic `$PROFILE` **inside
-  `WinSetup.ps1` only**; the Core module is unaffected.
+* The CLI switch `-Profile` is an **alias** of the `-SetupProfile` parameter.
+  A parameter literally named `Profile` is a trap: binding `-Profile <x>`
+  overwrites the process-wide automatic `$PROFILE` string, which the
+  `powershell-profile` component depends on.
+* `$PROFILE`'s note properties (`CurrentUserAllHosts`, …) are usually present
+  even under `pwsh -File`, but the `powershell-profile` component still derives
+  the paths from the bare string and falls back to `Documents\PowerShell\` so it
+  never dies on a host that strips them.

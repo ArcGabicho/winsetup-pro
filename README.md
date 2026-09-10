@@ -280,7 +280,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | 3 | Azure/AWS/gcloud/Terraform/kubectl/Helm CLIs · SSH · environment variables · folders · fonts | **done** |
 | 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | **done** |
 | 5 | Modular PowerShell profile · dotfiles · consolidated backups · post-install scripts | **done** |
-| 6 | Full profile set | in progress (declarative files shipped) |
+| 6 | Full profile set + 15 more components (VS, JetBrains, Go, Rust, Java, CMake/Ninja, Neovim, SQL/Postgres/MySQL/Redis/Mongo) | **done** |
 | 7 | Pester unit + integration + idempotency suites | in progress |
 | 8 | Full documentation set | in progress |
 

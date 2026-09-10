@@ -48,6 +48,12 @@
   "python": {
     "version": "3.12"
   },
+  "java": {
+    "version": "21"
+  },
+  "postgresql": {
+    "version": "17"
+  },
   "powershellProfile": {
     "enabled": false,
     "allHosts": true,

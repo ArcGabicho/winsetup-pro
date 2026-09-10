@@ -11,9 +11,11 @@
     "docker-desktop",
     "azure-cli",
     "github-cli",
-    "sqlserver-tools"
+    "sqlserver-tools",
+    "azure-data-studio"
   ],
   "git": { "enabled": true },
+  "powershellProfile": { "enabled": true },
   "wsl": { "enabled": true, "distribution": "Ubuntu" },
   "fonts": ["CascadiaCode", "JetBrainsMono"],
   "folders": ["Dev\\Projects", "Dev\\OpenSource", "Dev\\Labs"]

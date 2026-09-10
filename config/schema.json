@@ -75,6 +75,14 @@
       "type": "object",
       "properties": { "version": { "type": "string" } }
     },
+    "java": {
+      "type": "object",
+      "properties": { "version": { "type": "string" } }
+    },
+    "postgresql": {
+      "type": "object",
+      "properties": { "version": { "type": "string" } }
+    },
     "powershellProfile": {
       "type": "object",
       "properties": {

@@ -23,14 +23,19 @@
     .\WinSetup.ps1 -Status
 
 .NOTES
-    -Profile binds to $Profile and therefore shadows the automatic $PROFILE
-    variable inside this script only. The Core module has its own scope and is
-    unaffected.
+    The documented -Profile switch is an alias of the -SetupProfile parameter.
+    A parameter literally named Profile would overwrite the process-wide
+    automatic $PROFILE variable when a value is bound to it, which breaks the
+    PowerShell-profile component; hence the alias.
 #>
 [CmdletBinding(DefaultParameterSetName = 'Interactive')]
 param(
+    # Aliased to -Profile for the documented CLI. The parameter itself is NOT
+    # named $Profile: binding a value to a parameter called Profile overwrites
+    # the global automatic $PROFILE variable for the whole process.
     [Parameter(ParameterSetName = 'Profile', Mandatory)]
-    [string]$Profile,
+    [Alias('Profile')]
+    [string]$SetupProfile,
 
     [Parameter(ParameterSetName = 'Install', Mandatory)]
     [string[]]$Install,
@@ -278,7 +283,7 @@ try {
             Write-Host 'Self-update arrives in a later phase (Phase 5).' -ForegroundColor Yellow
             Write-Host 'For now, update with: git pull' -ForegroundColor DarkGray
         }
-        'Profile'  { Invoke-CliRun -ProfileName $Profile }
+        'Profile'  { Invoke-CliRun -ProfileName $SetupProfile }
         'Install'  { Invoke-CliRun -InstallOnly $Install }
         'WSL'      { Invoke-CliRun -InstallOnly @('wsl') }
         'Git'      { Invoke-CliRun -InstallOnly @('git') }

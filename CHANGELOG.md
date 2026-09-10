@@ -6,6 +6,25 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 6 — Profiles (added / changed)
+
+* **15 new components.** Development: `visualstudio` (admin),
+  `jetbrains-toolbox`, `cmake`, `ninja`, `go`, `rust`, `java` (Temurin,
+  version-configurable), `neovim`. Database: `sqlserver-tools` (go-sqlcmd),
+  `azure-data-studio`, `postgresql` (admin, version-configurable), `mysql`
+  (admin), `redis-cli` (admin), `mongodb-tools`, `mongosh`.
+* **Profiles reworked** so every id in `minimal`, `frontend`, `dotnet`,
+  `fullstack`, `enterprise` resolves to a registered component, with coherent
+  feature blocks (`git`, `powershellProfile`, `wsl`, `ssh`, `fonts`,
+  `folders`). A new `Profiles.Tests.ps1` enforces "every profile plan resolves
+  and dry-runs clean".
+* **Fixed a `$PROFILE` corruption bug**: the CLI switch is now `-Profile` as an
+  **alias** of `-SetupProfile`. A parameter literally named `Profile` (bound via
+  `-Profile <x>`) overwrites the process-wide automatic `$PROFILE` variable,
+  which broke the `powershell-profile` component.
+* `config` / `schema`: `java.version`, `postgresql.version`.
+* Verification suite 57/57; 40 components.
+
 ### Phase 5 — Customisation (added)
 
 * **`Backup-WinSetupFile`** (`modules/Core/Backup.ps1`): one consolidated

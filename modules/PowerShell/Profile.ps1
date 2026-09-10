@@ -24,7 +24,24 @@ New-WinSetupComponent -Id 'powershell-profile' -Name 'PowerShell profile' -Categ
         if ($requested.Count -eq 0) { $requested = $catalogue }
 
         $allHosts = (Get-WinSetupConfigValue -Config $Context.Config -Path 'powershellProfile.allHosts' -Default $true) -eq $true
-        $target = if ($allHosts) { $global:PROFILE.CurrentUserAllHosts } else { $global:PROFILE.CurrentUserCurrentHost }
+        # $PROFILE's note properties are not always attached (e.g. `pwsh -File`),
+        # so derive the paths from the bare $PROFILE string when needed.
+        $currentHostPath = [string]$global:PROFILE
+        $allHostsPath = $null
+        if ($global:PROFILE -and $global:PROFILE.PSObject.Properties['CurrentUserAllHosts']) {
+            $allHostsPath = [string]$global:PROFILE.CurrentUserAllHosts
+        }
+        elseif ($currentHostPath) {
+            $allHostsPath = Join-Path (Split-Path -Parent $currentHostPath) 'profile.ps1'
+        }
+        $target = if ($allHosts -and $allHostsPath) { $allHostsPath } else { $currentHostPath }
+        if (-not $target) {
+            $docs = [Environment]::GetFolderPath('MyDocuments')
+            if (-not $docs) { $docs = Join-Path $HOME 'Documents' }
+            $sub = if ($PSVersionTable.PSEdition -eq 'Core') { 'PowerShell' } else { 'WindowsPowerShell' }
+            $leaf = if ($allHosts) { 'profile.ps1' } else { 'Microsoft.PowerShell_profile.ps1' }
+            $target = Join-Path (Join-Path $docs $sub) $leaf
+        }
         $managedDir = Join-Path (Split-Path -Parent $target) 'winsetup-pro'
 
         $pending = @()
@@ -54,7 +71,24 @@ New-WinSetupComponent -Id 'powershell-profile' -Name 'PowerShell profile' -Categ
         if ($requested.Count -eq 0) { $requested = $catalogue }
 
         $allHosts = (Get-WinSetupConfigValue -Config $Context.Config -Path 'powershellProfile.allHosts' -Default $true) -eq $true
-        $target = if ($allHosts) { $global:PROFILE.CurrentUserAllHosts } else { $global:PROFILE.CurrentUserCurrentHost }
+        # $PROFILE's note properties are not always attached (e.g. `pwsh -File`),
+        # so derive the paths from the bare $PROFILE string when needed.
+        $currentHostPath = [string]$global:PROFILE
+        $allHostsPath = $null
+        if ($global:PROFILE -and $global:PROFILE.PSObject.Properties['CurrentUserAllHosts']) {
+            $allHostsPath = [string]$global:PROFILE.CurrentUserAllHosts
+        }
+        elseif ($currentHostPath) {
+            $allHostsPath = Join-Path (Split-Path -Parent $currentHostPath) 'profile.ps1'
+        }
+        $target = if ($allHosts -and $allHostsPath) { $allHostsPath } else { $currentHostPath }
+        if (-not $target) {
+            $docs = [Environment]::GetFolderPath('MyDocuments')
+            if (-not $docs) { $docs = Join-Path $HOME 'Documents' }
+            $sub = if ($PSVersionTable.PSEdition -eq 'Core') { 'PowerShell' } else { 'WindowsPowerShell' }
+            $leaf = if ($allHosts) { 'profile.ps1' } else { 'Microsoft.PowerShell_profile.ps1' }
+            $target = Join-Path (Join-Path $docs $sub) $leaf
+        }
         $managedDir = Join-Path (Split-Path -Parent $target) 'winsetup-pro'
         $sourceDir = Join-Path $Context.Paths.Templates 'powershell'
 

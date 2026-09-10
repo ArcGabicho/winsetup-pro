@@ -9,7 +9,9 @@
     "visualstudio",
     "dotnet-sdk",
     "nodejs",
+    "npm",
     "python",
+    "java",
     "docker-desktop",
     "azure-cli",
     "aws-cli",
@@ -18,7 +20,8 @@
     "kubectl",
     "helm",
     "github-cli",
-    "sqlserver-tools"
+    "sqlserver-tools",
+    "azure-data-studio"
   ],
   "settings": {
     "createBackups": true,
@@ -26,6 +29,8 @@
     "errorPolicy": { "critical": "abort", "nonCritical": "skip" }
   },
   "git": { "enabled": true, "credentialHelper": "manager" },
+  "ssh": { "enabled": true, "providers": ["github.com"] },
+  "powershellProfile": { "enabled": true, "modules": ["PSReadLine"] },
   "wsl": { "enabled": true, "distribution": "Ubuntu" },
   "fonts": ["CascadiaCode", "CascadiaMono", "JetBrainsMono"],
   "folders": ["Dev\\Projects", "Dev\\Clients", "Tools", "Scripts"]
