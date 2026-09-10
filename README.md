@@ -161,18 +161,52 @@ delegated to Git Credential Manager / SSH / GitHub CLI — no passwords are stor
 These run automatically when a profile/config gives them work; otherwise they
 report "nothing to do" and are skipped.
 
-## 10. Dotfiles — *Phase 5*
+## 10. PowerShell profile
 
-Local folder or remote repo, with a Yes/No/Skip prompt and versioned backups
-before any existing file is replaced.
+`powershellProfile.enabled` (or `-Install powershell-profile`). WinSetup Pro
+copies the requested fragments into `<profile dir>\winsetup-pro\` and keeps one
+marked block in your `$PROFILE` that loads them:
 
-## 11. Dry-run
+```
+# >>> WinSetup Pro managed block >>>
+...loads winsetup-pro\{aliases,functions,prompt,git,docker,environment}.ps1...
+# <<< WinSetup Pro managed block <<<
+```
+
+Everything outside the markers is left exactly as it was; the profile is backed
+up before the block is first written. `powershellProfile.modules` (e.g.
+`["PSReadLine","Terminal-Icons"]`) are installed with
+`Install-Module -Scope CurrentUser`.
+
+## 11. Dotfiles
+
+```powershell
+.\WinSetup.ps1 -Dotfiles "C:\Users\me\dotfiles"
+.\WinSetup.ps1 -DotfilesRepository "https://github.com/me/dotfiles.git"
+```
+
+* a repo is cloned into `state/dotfiles/`; a folder is used in place.
+* each file maps to the same relative path under `$HOME` (or use
+  `dotfiles.map`), and is only replaced when it differs.
+* before replacing, the existing file is backed up to
+  `backup/dotfiles/<timestamp>/` — always in `-NonInteractive`, or via a
+  **Yes / No / Skip** prompt (`dotfiles.backupExisting: prompt | always | never`).
+* nothing is ever deleted; `dotfiles.link: symlink` is available (falls back to
+  copy if it can't create the link).
+
+## 12. Post-install scripts
+
+`postInstall.scripts: ["scripts/my-finish.ps1"]` — local `.ps1` files run after
+the rest, each recorded by content hash so an unchanged script is not re-run
+(`postInstall.always: true` to force). Remote scripts are never fetched.
+
+## 13. Dry-run
 
 `-DryRun` runs every component's read-only `Test`, prints the intended
 `INSTALL` / `CONFIGURE` actions, writes a preview journal to
 `state/last-dryrun.json`, and makes no changes.
 
-## 12. Security
+## 14. Security
 
 * No remote script execution. `bootstrap.ps1` only prepares prerequisites and
   launches the local entry point; review the tree before running it.
@@ -182,7 +216,7 @@ before any existing file is replaced.
 * Windows Defender, the firewall and security policies are never modified.
 * Machine-scope changes require an elevated session and each component says why.
 
-## 13. Troubleshooting
+## 15. Troubleshooting
 
 | Symptom | Fix |
 |---|---|
@@ -192,7 +226,7 @@ before any existing file is replaced.
 | A run stopped half-way | `.\WinSetup.ps1 -Resume` |
 | Need detail | check the newest file in `logs/`, or pass `-LogLevel DEBUG` |
 
-## 14. Developing a component
+## 16. Developing a component
 
 Copy `modules/Applications/_Template.ps1` to `modules/<Category>/<Name>.ps1`.
 A component file **returns** one or more descriptors and has **no side effects at
@@ -221,7 +255,7 @@ Contract:
 * Set `-RequiresAdmin $true` for machine-scope work; `-Critical $true` to abort the run on failure.
 * Declare ordering with `-DependsOn @('other-id')`.
 
-## 15. Testing
+## 17. Testing
 
 ```powershell
 Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0   # once
@@ -233,7 +267,7 @@ host. Integration tests (Phase 7) are opt-in via `WINSETUP_ALLOW_INTEGRATION=1`.
 
 A network-free sanity script also exists at `tests/RunTests.ps1 -Suite unit`.
 
-## 16. Contribution
+## 18. Contribution
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
 
@@ -245,7 +279,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | 2 | Application components: pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop | **done** |
 | 3 | Azure/AWS/gcloud/Terraform/kubectl/Helm CLIs · SSH · environment variables · folders · fonts | **done** |
 | 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | **done** |
-| 5 | PowerShell profile · dotfiles · backups · post-install | planned |
+| 5 | Modular PowerShell profile · dotfiles · consolidated backups · post-install scripts | **done** |
 | 6 | Full profile set | in progress (declarative files shipped) |
 | 7 | Pester unit + integration + idempotency suites | in progress |
 | 8 | Full documentation set | in progress |

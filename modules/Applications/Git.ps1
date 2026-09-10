@@ -96,15 +96,7 @@ New-WinSetupComponent -Id 'git' -Name 'Git' -Category 'Development' `
         if (-not $git) { throw 'git was not found on PATH after installation.' }
 
         # Back up the existing global config before the first write.
-        $gitConfigPath = Join-Path $HOME '.gitconfig'
-        $doBackup = Get-WinSetupConfigValue -Config $Context.Config -Path 'settings.createBackups' -Default $true
-        if ($doBackup -and (Test-Path -LiteralPath $gitConfigPath)) {
-            $backupDir = Join-Path $Context.Paths.Backup 'git'
-            if (-not (Test-Path -LiteralPath $backupDir)) { New-Item -ItemType Directory -Path $backupDir -Force | Out-Null }
-            $stamp = Get-Date -Format 'yyyy-MM-dd_HHmmss'
-            Copy-Item -LiteralPath $gitConfigPath -Destination (Join-Path $backupDir ".gitconfig.$stamp") -Force
-            Write-WinSetupLog -Level INFO -Module 'git' -Message "Backed up .gitconfig to $backupDir"
-        }
+        Backup-WinSetupFile -Context $Context -Path (Join-Path $HOME '.gitconfig') -Category 'git' | Out-Null
 
         $desired = [ordered]@{
             'init.defaultBranch' = [string](Get-WinSetupConfigValue -Config $Context.Config -Path 'git.defaultBranch' -Default 'main')

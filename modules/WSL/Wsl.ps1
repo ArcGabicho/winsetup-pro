@@ -117,11 +117,7 @@ New-WinSetupComponent -Id 'wsl' -Name 'WSL 2' -Category 'WSL' `
                 Write-WinSetupLog -Level WARNING -Module 'wsl' -Message "$path already exists - left untouched (set wsl.overwriteWslConfig=true to replace it)."
             }
             else {
-                if ((Test-Path -LiteralPath $path) -and (Get-WinSetupConfigValue -Config $Context.Config -Path 'settings.createBackups' -Default $true)) {
-                    $bdir = Join-Path $Context.Paths.Backup 'wsl'
-                    if (-not (Test-Path -LiteralPath $bdir)) { New-Item -ItemType Directory -Path $bdir -Force | Out-Null }
-                    Copy-Item -LiteralPath $path -Destination (Join-Path $bdir (".wslconfig.{0}" -f (Get-Date -Format 'yyyy-MM-dd_HHmmss'))) -Force
-                }
+                Backup-WinSetupFile -Context $Context -Path $path -Category 'wsl' | Out-Null
                 Set-Content -LiteralPath $path -Value (Format-WinSetupWslConfig -Wsl2Settings $wslConf) -Encoding utf8 -NoNewline
                 Write-WinSetupLog -Level INFO -Module 'wsl' -Message "Wrote $path"
             }

@@ -134,12 +134,7 @@ New-WinSetupComponent -Id 'ssh' -Name 'SSH (OpenSSH client)' -Category 'Environm
             return
         }
 
-        if ((Get-WinSetupConfigValue -Config $Context.Config -Path 'settings.createBackups' -Default $true) -and (Test-Path -LiteralPath $configPath)) {
-            $bdir = Join-Path $Context.Paths.Backup 'ssh'
-            if (-not (Test-Path -LiteralPath $bdir)) { New-Item -ItemType Directory -Path $bdir -Force | Out-Null }
-            Copy-Item -LiteralPath $configPath -Destination (Join-Path $bdir ("config.{0}" -f (Get-Date -Format 'yyyy-MM-dd_HHmmss'))) -Force
-            Write-WinSetupLog -Level INFO -Module 'ssh' -Message "Backed up ~/.ssh/config"
-        }
+        Backup-WinSetupFile -Context $Context -Path $configPath -Category 'ssh' | Out-Null
 
         Add-Content -LiteralPath $configPath -Value ($append -join "`r`n") -Encoding utf8
         try { & icacls $configPath /inheritance:r /grant:r ("{0}:F" -f $env:USERNAME) | Out-Null } catch { }

@@ -6,6 +6,33 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 5 — Customisation (added)
+
+* **`Backup-WinSetupFile`** (`modules/Core/Backup.ps1`): one consolidated
+  snapshot helper — `backup/<category>/<timestamp>/`. Git, SSH and WSL now use
+  it.
+* **`powershell-profile`** (`modules/PowerShell/Profile.ps1`): copies the
+  requested fragments (`aliases`, `functions`, `prompt`, `git`, `docker`,
+  `environment` — templates in `templates/powershell/`) into
+  `<profile dir>\winsetup-pro\` and maintains a single **marked block** in
+  `$PROFILE` that dot-sources them. Content outside the markers is never
+  touched; `$PROFILE` is backed up before the block is first added/changed.
+  Optional `powershellProfile.modules` are installed with
+  `Install-Module -Scope CurrentUser`.
+* **`dotfiles`** (`modules/Dotfiles/Dotfiles.ps1`): restores config files from a
+  local folder or a git repo (cloned into `state/dotfiles/`). A file is only
+  replaced when it differs; the existing file is backed up first — always
+  unattended, via a Yes/No/Skip prompt when interactive
+  (`dotfiles.backupExisting`). Nothing is ever deleted. `copy` (default) or
+  `symlink`; explicit `dotfiles.map` or auto-mapping to `$HOME`.
+* **`post-install`** (`modules/PostInstall/PostInstall.ps1`): runs the local
+  `.ps1` scripts listed in `postInstall.scripts`, recording each by content
+  hash in `state/postinstall.json` so an unchanged script is not re-run
+  (`postInstall.always` to override). No remote scripts.
+* **CLI**: `-Dotfiles <path>`, `-DotfilesRepository <url>`.
+* `config` / `schema`: `powershellProfile`, `dotfiles`, `postInstall` blocks.
+* Tests: `tests/unit/Customization.Tests.ps1`; verification suite 51/51.
+
 ### Phase 4 — WSL 2 (added)
 
 * **WSL helpers** (`modules/Core/Wsl.ps1`): `Invoke-WinSetupWsl` (forces

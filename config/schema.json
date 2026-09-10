@@ -75,6 +75,36 @@
       "type": "object",
       "properties": { "version": { "type": "string" } }
     },
+    "powershellProfile": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "allHosts": { "type": "boolean" },
+        "fragments": {
+          "type": "array",
+          "items": { "enum": ["aliases", "functions", "prompt", "git", "docker", "environment"] }
+        },
+        "modules": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "dotfiles": {
+      "type": "object",
+      "properties": {
+        "path": { "type": ["string", "null"] },
+        "repository": { "type": ["string", "null"] },
+        "source": { "type": ["string", "null"] },
+        "map": { "type": "object" },
+        "backupExisting": { "enum": ["prompt", "always", "never"] },
+        "link": { "enum": ["copy", "symlink"] }
+      }
+    },
+    "postInstall": {
+      "type": "object",
+      "properties": {
+        "scripts": { "type": "array", "items": { "type": "string" } },
+        "always": { "type": "boolean" }
+      }
+    },
     "fonts": { "type": "array", "items": { "type": "string" } },
     "folders": { "type": "array", "items": { "type": "string" } },
     "environment": {

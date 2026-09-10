@@ -176,5 +176,17 @@ function Resolve-WinSetupPlan {
         if ($hasUser -or $hasMachine -or $hasPath) { $plan.Add('env-vars') }
     }
 
+    # Customisation components.
+    if ((Get-WinSetupConfigValue -Config $Config -Path 'powershellProfile.enabled' -Default $false) -eq $true) {
+        $plan.Add('powershell-profile')
+    }
+    $dfPath = Get-WinSetupConfigValue -Config $Config -Path 'dotfiles.path' -Default $null
+    $dfRepo = Get-WinSetupConfigValue -Config $Config -Path 'dotfiles.repository' -Default $null
+    $dfSrc  = Get-WinSetupConfigValue -Config $Config -Path 'dotfiles.source' -Default $null
+    if ($dfPath -or $dfRepo -or $dfSrc) { $plan.Add('dotfiles') }
+    if (@(Get-WinSetupConfigValue -Config $Config -Path 'postInstall.scripts' -Default @() | Where-Object { $_ }).Count -gt 0) {
+        $plan.Add('post-install')
+    }
+
     return @($plan | Where-Object { $_ } | Select-Object -Unique)
 }

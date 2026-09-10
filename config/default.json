@@ -48,6 +48,24 @@
   "python": {
     "version": "3.12"
   },
+  "powershellProfile": {
+    "enabled": false,
+    "allHosts": true,
+    "fragments": ["aliases", "functions", "prompt", "git", "docker", "environment"],
+    "modules": []
+  },
+  "dotfiles": {
+    "path": null,
+    "repository": null,
+    "source": null,
+    "map": {},
+    "backupExisting": "prompt",
+    "link": "copy"
+  },
+  "postInstall": {
+    "scripts": [],
+    "always": false
+  },
   "fonts": [],
   "folders": [],
   "environment": {

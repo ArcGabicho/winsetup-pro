@@ -59,6 +59,12 @@ param(
     [Parameter(ParameterSetName = 'SSH', Mandatory)]
     [switch]$SSH,
 
+    [Parameter(ParameterSetName = 'Dotfiles', Mandatory)]
+    [string]$Dotfiles,
+
+    [Parameter(ParameterSetName = 'DotfilesRepository', Mandatory)]
+    [string]$DotfilesRepository,
+
     [Parameter()][switch]$DryRun,
     [Parameter()][switch]$NonInteractive,
     [Parameter()][string]$ConfigFile,
@@ -126,6 +132,22 @@ function Invoke-CliRun {
         Write-Host ''
         Write-Host 'A restart is recommended so PATH and environment changes take full effect.' -ForegroundColor Yellow
     }
+}
+
+function Invoke-CliDotfiles {
+    param([string]$Path, [string]$Repository)
+
+    $config = Get-WinSetupConfig -Root $script:Root -ConfigPath $ConfigFile -LogLevelOverride $LogLevel
+    if (-not ($config['dotfiles'] -is [System.Collections.IDictionary])) { $config['dotfiles'] = [ordered]@{} }
+    if ($Path)       { $config['dotfiles']['path'] = $Path }
+    if ($Repository) { $config['dotfiles']['repository'] = $Repository }
+
+    $ctx = New-WinSetupContext -Root $script:Root -Config $config -DryRun:([bool]$DryRun) -Interactive:$script:Interactive
+    Write-Host ('Dotfiles source: {0}' -f $(if ($Repository) { $Repository } else { $Path })) -ForegroundColor White
+    Write-Host ''
+    $result = Invoke-WinSetupPlan -Context $ctx -ComponentIds @('dotfiles')
+    Write-WinSetupSummary -Result $result -DryRun:([bool]$DryRun)
+    if ($result.Failed -gt 0 -or $result.Aborted) { $script:ExitCode = 1 }
 }
 
 function Invoke-CliResume {
@@ -261,6 +283,8 @@ try {
         'WSL'      { Invoke-CliRun -InstallOnly @('wsl') }
         'Git'      { Invoke-CliRun -InstallOnly @('git') }
         'SSH'      { Invoke-CliRun -InstallOnly @('ssh') }
+        'Dotfiles'           { Invoke-CliDotfiles -Path $Dotfiles }
+        'DotfilesRepository' { Invoke-CliDotfiles -Repository $DotfilesRepository }
         default    { Invoke-CliInteractiveMenu }
     }
 }
