@@ -6,6 +6,33 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 3 — Developer environment (added)
+
+* **Cloud / infra CLI components** (`Cloud` category): `azure-cli`
+  (`Microsoft.AzureCLI`), `aws-cli`, `gcloud-cli`, `terraform`, `kubectl`,
+  `helm` — all winget-backed.
+* **`ssh`** (`modules/SSH/OpenSsh.ps1`): detects the OpenSSH client, installs it
+  via the Windows capability when missing (elevation asserted), discovers
+  existing keys and **never overwrites them**. Key creation is opt-in —
+  interactive prompt (ssh-keygen then asks for a passphrase) or
+  `ssh.generateKeyUnattended`. `ssh.providers` appends missing `~/.ssh/config`
+  Host blocks only, after backing the file up; key/dir permissions are locked
+  down with `icacls`.
+* **`env-vars`** (`modules/Environment/EnvironmentVariables.ps1`): applies
+  `environment.user` / `environment.machine` (machine scope asserts admin) and
+  appends `environment.path` entries to the **User** PATH, de-duplicated
+  (case-insensitive, trailing-separator-normalised). Snapshots the previous
+  values to `backup/environment/` first.
+* **`folders`** (`modules/Folders/Folders.ps1`): creates the `folders` tree
+  under the user profile. Only ever creates - never deletes.
+* **`fonts`** (`modules/Fonts/Fonts.ps1`): per-user install (no admin) of
+  Cascadia Code / Mono, JetBrains Mono, Fira Code from their official GitHub
+  releases; skips already-registered families.
+* `Resolve-WinSetupPlan` now also pulls in `folders` / `fonts` / `env-vars`
+  when the effective configuration gives them work to do.
+* `config` / `schema`: `ssh.providers`, `ssh.generateKeyUnattended`.
+* Tests: `tests/unit/Environment.Tests.ps1`; verification suite 36/36.
+
 ### Phase 2 — Applications (added)
 
 * **Shared winget helpers** (`modules/Core/Winget.ps1`):

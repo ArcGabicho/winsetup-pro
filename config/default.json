@@ -30,7 +30,9 @@
   },
   "ssh": {
     "enabled": false,
-    "keyType": "ed25519"
+    "keyType": "ed25519",
+    "providers": [],
+    "generateKeyUnattended": false
   },
   "githubCli": {
     "gitProtocol": null

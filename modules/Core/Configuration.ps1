@@ -161,5 +161,20 @@ function Resolve-WinSetupPlan {
         }
     }
 
+    # Config-driven environment components: included when they have work to do.
+    if (@(Get-WinSetupConfigValue -Config $Config -Path 'folders' -Default @() | Where-Object { $_ }).Count -gt 0) {
+        $plan.Add('folders')
+    }
+    if (@(Get-WinSetupConfigValue -Config $Config -Path 'fonts' -Default @() | Where-Object { $_ }).Count -gt 0) {
+        $plan.Add('fonts')
+    }
+    $environment = Get-WinSetupConfigValue -Config $Config -Path 'environment' -Default $null
+    if ($environment -is [System.Collections.IDictionary]) {
+        $hasUser    = ($environment['user']    -is [System.Collections.IDictionary]) -and ($environment['user'].Count -gt 0)
+        $hasMachine = ($environment['machine'] -is [System.Collections.IDictionary]) -and ($environment['machine'].Count -gt 0)
+        $hasPath    = @($environment['path'] | Where-Object { $_ }).Count -gt 0
+        if ($hasUser -or $hasMachine -or $hasPath) { $plan.Add('env-vars') }
+    }
+
     return @($plan | Where-Object { $_ } | Select-Object -Unique)
 }

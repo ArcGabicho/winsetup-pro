@@ -8,11 +8,13 @@ you want (a **profile** or a list of **components**) and the engine works out
 what is missing and applies only that. Running it twice changes nothing the
 second time.
 
-**Status:** Phases 1–2 are implemented and tested — the Core engine/CLI plus the
-first set of application components (PowerShell 7, Windows Terminal, VS Code,
-GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop). Developer
-environment, WSL, customisation and the remaining profiles land in later phases —
-see [CHANGELOG.md](CHANGELOG.md) and the roadmap below.
+**Status:** Phases 1–3 are implemented and tested — the Core engine/CLI, the
+application components (PowerShell 7, Windows Terminal, VS Code, GitHub CLI,
+.NET SDK, Node.js, npm, pnpm, Python, Docker Desktop), the cloud/infra CLIs
+(Azure, AWS, gcloud, Terraform, kubectl, Helm) and the developer-environment
+modules (SSH, environment variables, folders, fonts). WSL, customisation and the
+remaining profiles land in later phases — see [CHANGELOG.md](CHANGELOG.md) and
+the roadmap below.
 
 ---
 
@@ -108,10 +110,36 @@ config (`init.defaultBranch`, `pull.rebase`, `credential.helper`, `core.editor`)
 It **never overwrites** an existing `user.name` / `user.email`. Authentication is
 delegated to Git Credential Manager / SSH / GitHub CLI — no passwords are stored.
 
-## 9. SSH — *Phase 3*
+## 9. SSH
 
-OpenSSH detection/installation, key discovery, opt-in key generation (never
-overwriting), `~/.ssh/config` management and correct permissions.
+`.\WinSetup.ps1 -Install ssh` (or `ssh.enabled` in a profile):
+
+* detects the OpenSSH client; installs it via the Windows capability when
+  missing (needs an elevated session).
+* discovers existing keys in `~/.ssh` and **never overwrites or regenerates
+  them**.
+* offers to create a key only when none exists — interactively (`ssh-keygen`
+  then prompts for a passphrase), or unattended only if
+  `ssh.generateKeyUnattended: true`.
+* `ssh.providers: ["github.com", "gitlab.com", …]` appends the missing
+  `~/.ssh/config` Host blocks (never rewrites existing ones) after backing the
+  file up, and locks down permissions with `icacls`.
+* never stores a passphrase or password.
+
+## 9a. Environment variables, folders, fonts
+
+* **`env-vars`** — applies `environment.user` / `environment.machine` (machine
+  scope needs elevation) and appends `environment.path` entries to the User
+  PATH without duplicates. Previous values are snapshotted to
+  `backup/environment/`.
+* **`folders`** — creates the `folders` tree under your user profile; only ever
+  creates, never deletes.
+* **`fonts`** — per-user install (no admin) of Cascadia Code / Mono, JetBrains
+  Mono and Fira Code from their official GitHub releases; already-installed
+  families are skipped.
+
+These run automatically when a profile/config gives them work; otherwise they
+report "nothing to do" and are skipped.
 
 ## 10. Dotfiles — *Phase 5*
 
@@ -195,7 +223,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 |---|---|---|
 | 1 | Core engine, CLI, logging, config, dry-run, status, journal/resume | **done** |
 | 2 | Application components: pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop | **done** |
-| 3 | Git · GitHub/Azure/AWS CLI · SSH · environment variables · folders · fonts | planned |
+| 3 | Azure/AWS/gcloud/Terraform/kubectl/Helm CLIs · SSH · environment variables · folders · fonts | **done** |
 | 4 | WSL 2 module | planned |
 | 5 | PowerShell profile · dotfiles · backups · post-install | planned |
 | 6 | Full profile set | in progress (declarative files shipped) |
