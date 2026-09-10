@@ -12,33 +12,46 @@ you want (a **profile** or a list of **components**) and the engine works out
 what is missing and applies **only that**. Running it twice changes nothing the
 second time.
 
-**Status:** Phases 1–8 complete. Core engine + CLI, **40 components** across
-Development / Cloud / Database / Environment / Customisation, five profiles, an
-80-test Pester suite, and CI. See [CHANGELOG.md](CHANGELOG.md).
+**Status:** Phases 1–8 complete plus a WPF GUI. Core engine + CLI, **40
+components** across Development / Cloud / Database / Environment / Customisation,
+five profiles, a 117-test Pester suite, and CI. See [CHANGELOG.md](CHANGELOG.md).
 
 ## Quick start
 
+**Open the graphical app — one command:**
+
 ```powershell
-git clone https://github.com/<you>/WinSetup-Pro.git
-cd WinSetup-Pro
-.\scripts\install-launcher.ps1           # registers `winsetup` for your user (no admin)
-
-# open a new terminal, then:
-winsetup                                 # graphical app  (Profile -> Customize -> Review -> Apply)
-
-# ...or stay on the command line (unchanged):
-winsetup -Diagnose                       # is this machine ready?
-winsetup -Profile minimal -DryRun        # what would "minimal" do?
-winsetup -Profile minimal                # do it
-winsetup -Profile enterprise -ConfigFile company.json -NonInteractive   # automation
+git clone https://github.com/ArcGabicho/winsetup-pro.git
+cd winsetup-pro
+pwsh -File .\scripts\gui.ps1
 ```
 
-`.\WinSetup.ps1 ...` still works exactly as before — `winsetup` is a thin
-launcher that opens the GUI when given no arguments and forwards every CLI flag
-verbatim to `WinSetup.ps1`. Build the GUI once with
-`dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained`
-(self-contained → users need no .NET). Details in
-[docs/GUI.md](docs/GUI.md).
+`gui.ps1` builds the app the first time (needs the [.NET SDK 10+](https://dotnet.microsoft.com/download);
+takes ~10 s) and then launches it. In the window: **Profile → Customize →
+Review → Apply**. Nothing is changed until you confirm.
+
+**Prefer the command line?** It works exactly as before — no build, no SDK:
+
+```powershell
+pwsh -File .\WinSetup.ps1 -Diagnose                 # is this machine ready?
+pwsh -File .\WinSetup.ps1 -Profile minimal -DryRun  # preview
+pwsh -File .\WinSetup.ps1 -Profile minimal          # apply
+pwsh -File .\WinSetup.ps1 -Profile enterprise -ConfigFile company.json -NonInteractive
+```
+
+**Want a global `winsetup` command** (opens the GUI with no args, forwards every
+CLI flag to `WinSetup.ps1`)?
+
+```powershell
+.\scripts\install-launcher.ps1     # per-user PATH + $PROFILE line, no admin
+# open a new terminal:
+winsetup                            # -> GUI
+winsetup -Profile dotnet -DryRun    # -> CLI
+```
+
+For distribution, publish a self-contained exe (users need no .NET):
+`dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained`.
+Details in [docs/GUI.md](docs/GUI.md).
 
 ---
 
@@ -350,7 +363,7 @@ retry/skip/abort); set `-RequiresAdmin $true` for machine-scope work,
 ```powershell
 Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0 -Force -SkipPublisherCheck   # once
 
-pwsh -File .\tests\RunTests.ps1                       # unit suite (80 tests)
+pwsh -File .\tests\RunTests.ps1                       # unit suite (117 tests)
 pwsh -File .\tests\RunTests.ps1 -Suite all -CI        # + JUnit results in logs\
 pwsh -File .\tests\RunTests.ps1 -Coverage             # + code coverage
 $env:WINSETUP_ALLOW_INTEGRATION = '1'

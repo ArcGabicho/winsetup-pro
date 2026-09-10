@@ -50,6 +50,18 @@ Describe 'GUI project' {
         (Get-Content -LiteralPath (Join-Path $dir 'MainWindow.xaml') -Raw) | Should -Match 'Icon="Assets/app\.ico"'
     }
 
+    It 'scripts/gui.ps1 exists, parses, and can locate the built exe' {
+        $gui = Join-Path $script:Root 'scripts\gui.ps1'
+        $gui | Should -Exist
+        $tokens = $null; $errors = $null
+        [System.Management.Automation.Language.Parser]::ParseFile($gui, [ref]$tokens, [ref]$errors) | Out-Null
+        @($errors) | Should -BeNullOrEmpty
+        $raw = Get-Content -LiteralPath $gui -Raw
+        $raw | Should -Match "WINSETUP_HOME"
+        $raw | Should -Match "dotnet build"
+        $raw | Should -Match "Alias\('Profile'\)"   # must not bind a param literally named Profile
+    }
+
     It 'the built exe carries a Win32 icon' -Skip:(-not $script:HasDotnet) {
         Add-Type -AssemblyName System.Drawing
         $exe = Join-Path (Split-Path $script:Csproj) 'bin\Debug\net10.0-windows\WinSetup.Pro.UI.exe'

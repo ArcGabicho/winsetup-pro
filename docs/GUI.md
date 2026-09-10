@@ -76,14 +76,27 @@ applies a plan that needs elevation, the GUI offers *Restart as Administrator*
 run in the non-elevated instance. `RequiresAdmin` on a component is enforced by
 the engine, unchanged.
 
-## Building the GUI
+## Running the GUI
+
+| From a clone | Command |
+|---|---|
+| One-shot (builds on first run) | `pwsh -File .\scripts\gui.ps1` |
+| Dev loop | `dotnet run --project ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj` |
+| Via the global command | `.\scripts\install-launcher.ps1`, new terminal, then `winsetup` |
+
+`scripts\gui.ps1` sets `WINSETUP_HOME`, builds `WinSetup.Pro.UI.csproj` if no
+exe is found, then `Start-Process`es it. It accepts `-SetupProfile <name>` (alias
+`-Profile`) and `-DryRun` to preselect. If the .NET SDK is missing it points the
+user at the console (`WinSetup.ps1`).
+
+## Building for distribution
 
 ```powershell
 dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained
 ```
 
-Self-contained → end users need no .NET install. `winsetup` finds the published
-exe automatically (or set `WINSETUP_GUI_EXE`).
+Self-contained → end users need no .NET install. `winsetup` / `gui.ps1` find the
+published exe automatically (or set `WINSETUP_GUI_EXE`).
 
 ## What did NOT change
 
