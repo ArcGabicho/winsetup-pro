@@ -38,9 +38,9 @@ cd WinSetup-Pro
 17. [Developing a component](#17-developing-a-component) · 18. [Testing](#18-testing) ·
 19. [Contributing](#19-contributing)
 
-Deep-dive docs: [Architecture](docs/ARCHITECTURE.md) ·
-[Security](docs/SECURITY.md) · [Writing a component](docs/MODULES.md) ·
-[Troubleshooting](docs/TROUBLESHOOTING.md)
+Deep-dive docs: [Overview / user stories](docs/OVERVIEW.md) ·
+[Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) ·
+[Writing a component](docs/MODULES.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
 
 ---
 
