@@ -119,19 +119,21 @@ Describe 'dotfiles component' {
 
 Describe 'post-install component' {
     It 'runs a script once, records it, and does not re-run it unchanged' {
+        # File-based counter: no $global: / scope / strict-mode ambiguity.
+        $counter = Join-Path $TestDrive 'pi-runs.log'
         $s = Join-Path $TestDrive 'p1.ps1'
-        Set-Content -LiteralPath $s -Value '$global:WSP_PI = [int]$global:WSP_PI + 1'
+        Set-Content -LiteralPath $s -Value "param(`$c)`nAdd-Content -LiteralPath '$counter' -Value 'ran'"
+
         $cfg = Get-WinSetupConfig -Root $script:Root
         $cfg['postInstall']['scripts'] = @($s)
         $ctx = New-IsolatedContext $cfg
-        $global:WSP_PI = 0
-        try {
-            & $script:Registry['post-install'].Configure $ctx
-            $global:WSP_PI | Should -Be 1
-            & $script:Registry['post-install'].Configure $ctx
-            $global:WSP_PI | Should -Be 1
-            (& $script:Registry['post-install'].Test $ctx).Configured | Should -BeTrue
-        }
-        finally { Remove-Variable -Name WSP_PI -Scope Global -ErrorAction SilentlyContinue }
+
+        & $script:Registry['post-install'].Configure $ctx
+        @(Get-Content -LiteralPath $counter -ErrorAction SilentlyContinue).Count | Should -Be 1
+
+        & $script:Registry['post-install'].Configure $ctx
+        @(Get-Content -LiteralPath $counter -ErrorAction SilentlyContinue).Count | Should -Be 1
+
+        (& $script:Registry['post-install'].Test $ctx).Configured | Should -BeTrue
     }
 }

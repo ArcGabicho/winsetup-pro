@@ -25,8 +25,13 @@ function Invoke-WinSetupProcess {
     param(
         [Parameter(Mandatory)][string]$FilePath,
         [string[]]$Arguments = @(),
-        [int]$TimeoutMs = 8000
+        [int]$TimeoutMs = 8000,
+        [System.Text.Encoding]$StdoutEncoding,
+        # Return { StdOut; ExitCode; TimedOut } instead of just the stdout string.
+        [switch]$PassThru
     )
+    $fail = if ($PassThru) { [pscustomobject]@{ StdOut = $null; ExitCode = -1; TimedOut = $true } } else { $null }
+
     $psi = [System.Diagnostics.ProcessStartInfo]::new()
     $psi.FileName = $FilePath
     foreach ($a in $Arguments) { $psi.ArgumentList.Add($a) }
@@ -34,18 +39,24 @@ function Invoke-WinSetupProcess {
     $psi.RedirectStandardError = $true
     $psi.UseShellExecute = $false
     $psi.CreateNoWindow = $true
+    if ($StdoutEncoding) { $psi.StandardOutputEncoding = $StdoutEncoding }
 
     $proc = $null
-    try { $proc = [System.Diagnostics.Process]::Start($psi) } catch { return $null }
-    if (-not $proc) { return $null }
+    try { $proc = [System.Diagnostics.Process]::Start($psi) } catch { return $fail }
+    if (-not $proc) { return $fail }
 
     $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
     $null = $proc.StandardError.ReadToEndAsync()
     if (-not $proc.WaitForExit($TimeoutMs)) {
         try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { } }
-        return $null
+        return $fail
     }
-    try { return $stdoutTask.GetAwaiter().GetResult() } catch { return $null }
+    $out = $null
+    try { $out = $stdoutTask.GetAwaiter().GetResult() } catch { }
+    if ($PassThru) {
+        return [pscustomobject]@{ StdOut = $out; ExitCode = $proc.ExitCode; TimedOut = $false }
+    }
+    return $out
 }
 
 function Get-WinSetupExeVersion {

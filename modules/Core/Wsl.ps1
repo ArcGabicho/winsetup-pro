@@ -11,33 +11,33 @@ function Invoke-WinSetupWsl {
         Runs wsl.exe with clean UTF-8 capture. Returns { ExitCode; Lines; Text }.
     #>
     [CmdletBinding()]
-    param([Parameter(Mandatory)][string[]]$Arguments)
+    param(
+        [Parameter(Mandatory)][string[]]$Arguments,
+        # Timeboxed: on a host where WSL isn't set up, `wsl --list` can hang for
+        # tens of seconds waiting on LxssManager.
+        [int]$TimeoutMs = 15000
+    )
 
-    if (-not (Get-Command wsl.exe -ErrorAction SilentlyContinue)) {
-        throw 'wsl.exe is not available on this system.'
-    }
+    $wsl = Get-Command wsl.exe -ErrorAction SilentlyContinue
+    if (-not $wsl) { throw 'wsl.exe is not available on this system.' }
 
     $env:WSL_UTF8 = '1'
-    $previous = [Console]::OutputEncoding
-    try {
-        [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-        $raw = & wsl.exe @Arguments 2>&1
-    }
-    finally {
-        [Console]::OutputEncoding = $previous
-    }
-    $code = $LASTEXITCODE
+    $res = Invoke-WinSetupProcess -FilePath $wsl.Source -Arguments $Arguments -TimeoutMs $TimeoutMs `
+        -StdoutEncoding ([System.Text.Encoding]::UTF8) -PassThru
 
-    $lines = @(
-        $raw |
-            ForEach-Object { ([string]$_) -replace "`0", '' } |
-            ForEach-Object { $_.TrimEnd("`r") } |
-            Where-Object { $_ -ne '' }
-    )
+    $lines = @()
+    if ($res.StdOut) {
+        $lines = @(
+            ($res.StdOut -split "`n") |
+                ForEach-Object { ($_ -replace "`0", '').TrimEnd("`r") } |
+                Where-Object { $_ -ne '' }
+        )
+    }
     [pscustomobject]@{
-        ExitCode = $code
+        ExitCode = $res.ExitCode
         Lines    = $lines
         Text     = ($lines -join "`n")
+        TimedOut = $res.TimedOut
     }
 }
 
