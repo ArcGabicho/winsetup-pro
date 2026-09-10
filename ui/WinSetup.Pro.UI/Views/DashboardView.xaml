@@ -9,7 +9,7 @@
                    Text="Choose how to configure this PC. Nothing is changed until you review and confirm." />
 
         <!-- Resume banner -->
-        <Border Style="{StaticResource Card}" Margin="0,16,0,0"
+        <Border Style="{StaticResource CardPanel}" Margin="0,16,0,0"
                 BorderBrush="{DynamicResource Warn}"
                 Visibility="{Binding ShowResume, Converter={StaticResource BoolToVis}}">
             <StackPanel>
@@ -33,7 +33,7 @@
         </WrapPanel>
 
         <!-- System card -->
-        <Border Style="{StaticResource Card}" Margin="0,10,0,0">
+        <Border Style="{StaticResource CardPanel}" Margin="0,10,0,0">
             <StackPanel>
                 <TextBlock Style="{StaticResource H2}" Text="This machine" Margin="0,0,0,8" />
                 <Grid>

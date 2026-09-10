@@ -4,7 +4,7 @@
     <StackPanel MaxWidth="720" HorizontalAlignment="Left">
         <TextBlock Style="{StaticResource H1}" Text="{Binding Headline}" />
 
-        <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+        <Border Style="{StaticResource CardPanel}" Margin="0,12,0,0">
             <StackPanel>
                 <TextBlock Margin="0,2"><Run Text="✓ " Foreground="{DynamicResource Ok}" /><Run Text="{Binding Summary.Installed, Mode=OneWay}" /><Run Text=" installed" /></TextBlock>
                 <TextBlock Margin="0,2"><Run Text="✓ " Foreground="{DynamicResource Ok}" /><Run Text="{Binding Summary.Configured, Mode=OneWay}" /><Run Text=" configured" /></TextBlock>

@@ -8,7 +8,7 @@
                     Command="{Binding RefreshCommand}" />
         </DockPanel>
 
-        <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+        <Border Style="{StaticResource CardPanel}" Margin="0,12,0,0">
             <ItemsControl ItemsSource="{Binding Checks}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

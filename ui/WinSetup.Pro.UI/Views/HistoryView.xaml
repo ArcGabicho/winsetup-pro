@@ -12,7 +12,7 @@
         <ItemsControl ItemsSource="{Binding Items}" Margin="0,12,0,0">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,6" Padding="14,10">
+                    <Border Style="{StaticResource CardPanel}" Margin="0,0,0,6" Padding="14,10">
                         <DockPanel>
                             <TextBlock DockPanel.Dock="Right" Text="{Binding When}"
                                        Style="{StaticResource Muted}" FontSize="12" />

@@ -50,7 +50,7 @@
         <Setter Property="FontFamily" Value="Segoe UI" />
     </Style>
 
-    <Style x:Key="Card" TargetType="Border">
+    <Style x:Key="CardPanel" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource Card}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
