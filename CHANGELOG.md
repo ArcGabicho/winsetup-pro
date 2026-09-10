@@ -6,7 +6,31 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-_Nothing yet._
+### GUI groundwork (0.2.0, in progress)
+
+The engine stays the single source of truth; the GUI is a client.
+
+* **Engine event hook** — `Invoke-WinSetupPlan -EventSink <scriptblock>` (new,
+  optional). Emits `plan_resolved` / `component_started` / `component_completed`
+  / `component_failed` / `run_completed`. With no sink the behaviour is
+  byte-for-byte identical. `tests/unit/EngineEvents.Tests.ps1`.
+* **JSON adapter** — `scripts/WinSetupApi.psm1` (`Invoke-WinSetupApi`) exposes
+  the engine as JSON in / JSON out (verbs: system, diagnose, profiles,
+  components, status, plan, apply, journal, resume, export, import). It contains
+  **no** install/configure logic. `scripts/winsetup-api.ps1` is the thin
+  transport wrapper (NDJSON event stream for apply/resume).
+  `tests/unit/Api.Tests.ps1`.
+* **`export` / `import`** verbs — serialize / validate the merged config
+  document (no new planning logic).
+* **`winsetup` launcher** — `launcher/WinSetupPro` module (`Invoke-WinSetup`,
+  alias `winsetup`) + `launcher/bin` shims + `scripts/install-launcher.ps1`
+  (per-user PATH + `$PROFILE` line, `WINSETUP_HOME`). `winsetup` with no flags
+  opens the GUI; any CLI flag is forwarded verbatim to `WinSetup.ps1`. The
+  classic CLI is unchanged. `tests/unit/Launcher.Tests.ps1`.
+* `docs/GUI.md`. Unit suite: 108 tests.
+
+_WPF app (`ui/WinSetup.Pro.UI`), elevation flow, run UX and integration tests
+land next._
 
 ## [0.1.0] - 2026-09-10
 

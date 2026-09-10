@@ -99,8 +99,21 @@ function Invoke-WinSetupPlan {
         [Parameter(Mandatory)]$Context,
         [Parameter(Mandatory)][string[]]$ComponentIds,
         [string]$ProfileName,
-        $ResumeJournal
+        $ResumeJournal,
+        # Optional. When supplied, the engine calls it with a [pscustomobject]
+        # for each lifecycle event (plan_resolved, component_started,
+        # component_completed, component_failed, run_completed) IN ADDITION TO
+        # the existing console output and logging. Omit it and behaviour is
+        # byte-for-byte identical. Used by the GUI's JSON adapter.
+        [scriptblock]$EventSink
     )
+
+    function Publish-WinSetupPlanEvent {
+        param([hashtable]$Data)
+        if ($null -ne $EventSink) {
+            try { & $EventSink ([pscustomobject]$Data) } catch { }
+        }
+    }
 
     $requested = @($ComponentIds | ForEach-Object { $_.ToString().ToLowerInvariant() } | Select-Object -Unique)
     $known     = @($requested | Where-Object { $Context.Registry.Contains($_) })
@@ -113,6 +126,8 @@ function Invoke-WinSetupPlan {
 
     if ($known.Count -eq 0) {
         Write-WinSetupLog -Level WARNING -Module 'Engine' -Message 'No known components in the plan.'
+        Publish-WinSetupPlanEvent @{ type = 'plan_resolved'; components = @(); unknown = $unknown; total = 0; dryRun = [bool]$Context.DryRun }
+        Publish-WinSetupPlanEvent @{ type = 'run_completed'; total = 0; installed = 0; configured = 0; skipped = 0; failed = 0; planned = 0; dryRun = [bool]$Context.DryRun; aborted = $false; journalPath = $null }
         return [pscustomobject]@{
             Total = 0; Installed = 0; Configured = 0; Skipped = 0; Failed = 0; Planned = 0
             DryRun = $Context.DryRun; Aborted = $false; Results = @(); Unknown = $unknown; JournalPath = $null
@@ -120,6 +135,7 @@ function Invoke-WinSetupPlan {
     }
 
     $ordered = Resolve-WinSetupComponentOrder -Registry $Context.Registry -Ids $known
+    Publish-WinSetupPlanEvent @{ type = 'plan_resolved'; components = $ordered; unknown = $unknown; total = $ordered.Count; dryRun = [bool]$Context.DryRun }
 
     $journalPath = if ($Context.DryRun) {
         Join-Path $Context.Paths.State 'last-dryrun.json'
@@ -142,9 +158,11 @@ function Invoke-WinSetupPlan {
         $index++
         $component = $Context.Registry[$id]
         $entry = $journal.Entries | Where-Object { $_.Id -eq $id } | Select-Object -First 1
+        Publish-WinSetupPlanEvent @{ type = 'component_started'; component = $id; name = $component.Name; index = $index; total = $total }
 
         if ($ResumeJournal -and $entry -and $entry.Status -in @('Installed', 'Configured', 'Skipped')) {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'skip' -Detail 'already completed in the previous run'
+            Publish-WinSetupPlanEvent @{ type = 'component_completed'; component = $id; name = $component.Name; action = 'AlreadyDone'; detail = 'completed in the previous run' }
             continue
         }
 
@@ -157,6 +175,7 @@ function Invoke-WinSetupPlan {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'warn' -Detail 'requires an elevated session - skipped'
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Skipped' -Action 'skip-noadmin' -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = 'SkipNoAdmin'; Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
+            Publish-WinSetupPlanEvent @{ type = 'component_completed'; component = $id; name = $component.Name; action = 'SkipNoAdmin'; detail = 'requires an elevated session' }
             continue
         }
         $adminNote = if ($component.RequiresAdmin -and -not $Context.IsAdmin) { ' (needs elevation)' } else { '' }
@@ -176,6 +195,7 @@ function Invoke-WinSetupPlan {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'skip' -Detail $detailText
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Skipped' -Action 'skip' -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = 'Skip'; Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
+            Publish-WinSetupPlanEvent @{ type = 'component_completed'; component = $id; name = $component.Name; action = 'Skip'; detail = $detailText; version = $detection.Version }
             continue
         }
 
@@ -187,6 +207,7 @@ function Invoke-WinSetupPlan {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'dry' -Detail (($planned -join ' + ') + $adminNote)
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Planned' -Action ($planned -join '+') -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = ('DryRun:' + ($planned -join '+')); Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
+            Publish-WinSetupPlanEvent @{ type = 'component_completed'; component = $id; name = $component.Name; action = ('DryRun:' + ($planned -join '+')); detail = (($planned -join ' + ') + $adminNote); requiresAdmin = [bool]$component.RequiresAdmin }
             continue
         }
 
@@ -226,11 +247,13 @@ function Invoke-WinSetupPlan {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'ok' -Detail $detailText
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status $status -Action $action -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = $status; Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
+            Publish-WinSetupPlanEvent @{ type = 'component_completed'; component = $id; name = $component.Name; action = $status; detail = $detailText; durationMs = $stopwatch.ElapsedMilliseconds }
         }
         else {
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'fail' -Detail 'see session log for details'
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Failed' -Action 'fail' -ErrorText 'operation failed' -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = 'Fail'; Error = 'operation failed'; DurationMs = $stopwatch.ElapsedMilliseconds })
+            Publish-WinSetupPlanEvent @{ type = 'component_failed'; component = $id; name = $component.Name; error = 'operation failed'; durationMs = $stopwatch.ElapsedMilliseconds; aborted = [bool]$aborted }
         }
 
         if ($aborted) {
@@ -245,7 +268,7 @@ function Invoke-WinSetupPlan {
     }
 
     $arr = $results.ToArray()
-    [pscustomobject]@{
+    $summary = [pscustomobject]@{
         Total       = $arr.Count
         Installed   = @($arr | Where-Object { $_.Action -eq 'Installed' }).Count
         Configured  = @($arr | Where-Object { $_.Action -eq 'Configured' }).Count
@@ -258,4 +281,11 @@ function Invoke-WinSetupPlan {
         Unknown     = $unknown
         JournalPath = $journal.Path
     }
+    Publish-WinSetupPlanEvent @{
+        type = 'run_completed'
+        total = $summary.Total; installed = $summary.Installed; configured = $summary.Configured
+        skipped = $summary.Skipped; failed = $summary.Failed; planned = $summary.Planned
+        dryRun = [bool]$summary.DryRun; aborted = [bool]$summary.Aborted; journalPath = $summary.JournalPath
+    }
+    return $summary
 }

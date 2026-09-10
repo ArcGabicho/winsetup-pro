@@ -19,3 +19,9 @@ Thumbs.db
 !logs/.gitkeep
 !state/.gitkeep
 !backup/.gitkeep
+
+# GUI (.NET) build output
+ui/**/bin/
+ui/**/obj/
+ui/publish/
+*.user
