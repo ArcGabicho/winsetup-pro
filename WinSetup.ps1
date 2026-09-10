@@ -50,6 +50,15 @@ param(
     [Parameter(ParameterSetName = 'Update', Mandatory)]
     [switch]$Update,
 
+    [Parameter(ParameterSetName = 'WSL', Mandatory)]
+    [switch]$WSL,
+
+    [Parameter(ParameterSetName = 'Git', Mandatory)]
+    [switch]$Git,
+
+    [Parameter(ParameterSetName = 'SSH', Mandatory)]
+    [switch]$SSH,
+
     [Parameter()][switch]$DryRun,
     [Parameter()][switch]$NonInteractive,
     [Parameter()][string]$ConfigFile,
@@ -249,6 +258,9 @@ try {
         }
         'Profile'  { Invoke-CliRun -ProfileName $Profile }
         'Install'  { Invoke-CliRun -InstallOnly $Install }
+        'WSL'      { Invoke-CliRun -InstallOnly @('wsl') }
+        'Git'      { Invoke-CliRun -InstallOnly @('git') }
+        'SSH'      { Invoke-CliRun -InstallOnly @('ssh') }
         default    { Invoke-CliInteractiveMenu }
     }
 }

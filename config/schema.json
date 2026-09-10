@@ -43,7 +43,9 @@
       "properties": {
         "enabled": { "type": "boolean" },
         "distribution": { "type": ["string", "null"] },
-        "setDefaultVersion2": { "type": "boolean" }
+        "setDefaultVersion2": { "type": "boolean" },
+        "wslConfig": { "type": "object" },
+        "overwriteWslConfig": { "type": "boolean" }
       }
     },
     "ssh": {

@@ -6,6 +6,25 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Phase 4 — WSL 2 (added)
+
+* **WSL helpers** (`modules/Core/Wsl.ps1`): `Invoke-WinSetupWsl` (forces
+  `WSL_UTF8` + UTF-8 console, strips NUL bytes), `Get-WinSetupWslInfo`
+  (locale-independent state from the `Lxss` registry key + optional-feature
+  query + distro list), `Format-WinSetupWslConfig`.
+* **`wsl` component** (`modules/WSL/Wsl.ps1`, `RequiresAdmin`): enables the WSL
+  and Virtual Machine Platform features (`wsl --install --no-distribution`, DISM
+  fallback) and tells the user to restart; runs `wsl --set-default-version 2`;
+  writes `~/.wslconfig` **create-only** (left untouched unless
+  `wsl.overwriteWslConfig`, backed up first); installs `wsl.distribution` from
+  `wsl --list --online` with `--no-launch` (interactive menu when unset).
+  Existing distributions are never unregistered or reset.
+* **CLI**: `-WSL`, `-Git`, `-SSH` switches (run just that component).
+* Dry-run now previews admin-only components (flagged "needs elevation")
+  instead of skipping them; real runs still skip when not elevated.
+* `config` / `schema`: `wsl.wslConfig`, `wsl.overwriteWslConfig`.
+* Tests: `tests/unit/Wsl.Tests.ps1`; verification suite 43/43.
+
 ### Phase 3 — Developer environment (added)
 
 * **Cloud / infra CLI components** (`Cloud` category): `azure-cli`

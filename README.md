@@ -54,6 +54,7 @@ There is intentionally **no `irm ... | iex` one-liner** — see [Security](#12-s
 .\WinSetup.ps1 -Profile minimal      # apply a profile
 .\WinSetup.ps1 -Profile dotnet -DryRun
 .\WinSetup.ps1 -Install git          # just these components
+.\WinSetup.ps1 -WSL                  # WSL 2 only  (also -Git, -SSH)
 .\WinSetup.ps1 -List                 # list available components
 .\WinSetup.ps1 -Status               # what is installed / configured
 .\WinSetup.ps1 -Diagnose             # host readiness checks
@@ -98,10 +99,29 @@ config file. Example user config:
 WinSetup Pro **never** asks for `user.name` / `user.email`; set them in config if
 you want them applied, otherwise Git identity is left untouched.
 
-## 7. WSL — *Phase 4*
+## 7. WSL
 
-Detection, WSL2 enablement, distribution selection and `.wslconfig` management.
-Existing distributions are never destroyed.
+`.\WinSetup.ps1 -WSL` (or `wsl.enabled` in a profile — needs an elevated
+session):
+
+* enables the **WSL** and **Virtual Machine Platform** features
+  (`wsl --install --no-distribution`, DISM fallback) and tells you to restart;
+* runs `wsl --set-default-version 2` when `wsl.setDefaultVersion2` (default);
+* installs `wsl.distribution` (validated against `wsl --list --online`,
+  `--no-launch`); with no distribution set, an interactive run shows a menu;
+* writes `~/.wslconfig` from `wsl.wslConfig` **only if the file does not exist**
+  — an existing one is left untouched unless `wsl.overwriteWslConfig: true`
+  (and is backed up first);
+* **never** unregisters, resets or overwrites an existing distribution.
+
+```jsonc
+"wsl": {
+  "enabled": true,
+  "distribution": "Ubuntu",
+  "setDefaultVersion2": true,
+  "wslConfig": { "memory": "6GB", "processors": 4, "swap": "0" }
+}
+```
 
 ## 8. Git
 
@@ -224,7 +244,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 | 1 | Core engine, CLI, logging, config, dry-run, status, journal/resume | **done** |
 | 2 | Application components: pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop | **done** |
 | 3 | Azure/AWS/gcloud/Terraform/kubectl/Helm CLIs · SSH · environment variables · folders · fonts | **done** |
-| 4 | WSL 2 module | planned |
+| 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | **done** |
 | 5 | PowerShell profile · dotfiles · backups · post-install | planned |
 | 6 | Full profile set | in progress (declarative files shipped) |
 | 7 | Pester unit + integration + idempotency suites | in progress |

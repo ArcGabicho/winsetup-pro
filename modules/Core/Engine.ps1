@@ -150,13 +150,16 @@ function Invoke-WinSetupPlan {
 
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-        if ($component.RequiresAdmin -and -not $Context.IsAdmin) {
+        # Real runs skip an admin-only component when not elevated. Dry runs still
+        # show what it would do, flagged as needing elevation.
+        if ($component.RequiresAdmin -and -not $Context.IsAdmin -and -not $Context.DryRun) {
             $stopwatch.Stop()
             Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'warn' -Detail 'requires an elevated session - skipped'
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Skipped' -Action 'skip-noadmin' -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = 'SkipNoAdmin'; Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
             continue
         }
+        $adminNote = if ($component.RequiresAdmin -and -not $Context.IsAdmin) { ' (needs elevation)' } else { '' }
 
         $detection = $null
         try { $detection = & $component.Test $Context } catch {
@@ -181,7 +184,7 @@ function Invoke-WinSetupPlan {
             $planned = @()
             if ($needInstall)   { $planned += 'INSTALL' }
             if ($needConfigure) { $planned += 'CONFIGURE' }
-            Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'dry' -Detail ($planned -join ' + ')
+            Write-WinSetupStep -Index $index -Total $total -Label $component.Name -Status 'dry' -Detail (($planned -join ' + ') + $adminNote)
             Update-WinSetupJournalEntry -Journal $journal -Id $id -Status 'Planned' -Action ($planned -join '+') -DurationMs $stopwatch.ElapsedMilliseconds
             $results.Add([pscustomobject]@{ Id = $id; Name = $component.Name; Action = ('DryRun:' + ($planned -join '+')); Error = $null; DurationMs = $stopwatch.ElapsedMilliseconds })
             continue
