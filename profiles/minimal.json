@@ -1,0 +1,12 @@
+{
+  "profile": "minimal",
+  "description": "The smallest useful developer baseline.",
+  "applications": [
+    "git",
+    "pwsh",
+    "windows-terminal",
+    "vscode",
+    "github-cli"
+  ],
+  "git": { "enabled": true }
+}

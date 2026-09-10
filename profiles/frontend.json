@@ -1,0 +1,16 @@
+{
+  "profile": "frontend",
+  "description": "Front-end / web developer workstation.",
+  "applications": [
+    "git",
+    "pwsh",
+    "windows-terminal",
+    "vscode",
+    "nodejs",
+    "pnpm",
+    "github-cli"
+  ],
+  "git": { "enabled": true },
+  "fonts": ["CascadiaCode", "FiraCode"],
+  "folders": ["Dev\\Projects", "Dev\\Experiments"]
+}

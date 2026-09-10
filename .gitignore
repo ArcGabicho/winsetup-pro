@@ -1,0 +1,21 @@
+# WinSetup Pro - runtime artefacts
+logs/
+state/
+backup/
+*.log
+
+# Local overrides
+config/local.json
+config/*.local.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vs/
+.vscode/*
+!.vscode/extensions.json
+
+# keep runtime dirs in the tree
+!logs/.gitkeep
+!state/.gitkeep
+!backup/.gitkeep

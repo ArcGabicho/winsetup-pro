@@ -1,0 +1,32 @@
+{
+  "profile": "enterprise",
+  "description": "Standardised corporate developer workstation.",
+  "applications": [
+    "git",
+    "pwsh",
+    "windows-terminal",
+    "vscode",
+    "visualstudio",
+    "dotnet-sdk",
+    "nodejs",
+    "python",
+    "docker-desktop",
+    "azure-cli",
+    "aws-cli",
+    "gcloud-cli",
+    "terraform",
+    "kubectl",
+    "helm",
+    "github-cli",
+    "sqlserver-tools"
+  ],
+  "settings": {
+    "createBackups": true,
+    "restartPrompt": true,
+    "errorPolicy": { "critical": "abort", "nonCritical": "skip" }
+  },
+  "git": { "enabled": true, "credentialHelper": "manager" },
+  "wsl": { "enabled": true, "distribution": "Ubuntu" },
+  "fonts": ["CascadiaCode", "CascadiaMono", "JetBrainsMono"],
+  "folders": ["Dev\\Projects", "Dev\\Clients", "Tools", "Scripts"]
+}

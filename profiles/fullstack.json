@@ -1,0 +1,22 @@
+{
+  "profile": "fullstack",
+  "description": "Full-stack workstation: web front-end plus back-end services.",
+  "applications": [
+    "git",
+    "pwsh",
+    "windows-terminal",
+    "vscode",
+    "nodejs",
+    "pnpm",
+    "python",
+    "docker-desktop",
+    "postgresql",
+    "redis-cli",
+    "github-cli",
+    "azure-cli"
+  ],
+  "git": { "enabled": true },
+  "wsl": { "enabled": true, "distribution": "Ubuntu" },
+  "fonts": ["CascadiaCode", "JetBrainsMono"],
+  "folders": ["Dev\\Projects", "Dev\\OpenSource", "Dev\\Clients", "Dev\\Labs"]
+}

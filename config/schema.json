@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://winsetup.pro/schema/config.json",
+  "title": "WinSetup Pro configuration",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "profile": { "type": "string" },
+    "applications": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Component ids to install and/or configure."
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "logLevel": { "enum": ["DEBUG", "INFO", "SUCCESS", "WARNING", "ERROR"] },
+        "createBackups": { "type": "boolean" },
+        "restartPrompt": { "type": "boolean" },
+        "errorPolicy": {
+          "type": "object",
+          "properties": {
+            "critical": { "enum": ["retry", "skip", "abort"] },
+            "nonCritical": { "enum": ["retry", "skip", "abort"] }
+          }
+        }
+      }
+    },
+    "git": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "defaultBranch": { "type": "string" },
+        "pullRebase": { "type": "string", "enum": ["true", "false", "merges", "interactive"] },
+        "credentialHelper": { "type": "string" },
+        "editor": { "type": ["string", "null"] },
+        "userName": { "type": ["string", "null"] },
+        "userEmail": { "type": ["string", "null"] }
+      }
+    },
+    "wsl": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "distribution": { "type": ["string", "null"] },
+        "setDefaultVersion2": { "type": "boolean" }
+      }
+    },
+    "ssh": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "keyType": { "type": "string", "enum": ["ed25519", "rsa", "ecdsa"] }
+      }
+    },
+    "fonts": { "type": "array", "items": { "type": "string" } },
+    "folders": { "type": "array", "items": { "type": "string" } },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "user": { "type": "object" },
+        "machine": { "type": "object" },
+        "path": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

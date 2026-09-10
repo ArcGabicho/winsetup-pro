@@ -1,0 +1,20 @@
+{
+  "profile": "dotnet",
+  "description": ".NET developer workstation.",
+  "applications": [
+    "git",
+    "pwsh",
+    "windows-terminal",
+    "vscode",
+    "visualstudio",
+    "dotnet-sdk",
+    "docker-desktop",
+    "azure-cli",
+    "github-cli",
+    "sqlserver-tools"
+  ],
+  "git": { "enabled": true },
+  "wsl": { "enabled": true, "distribution": "Ubuntu" },
+  "fonts": ["CascadiaCode", "JetBrainsMono"],
+  "folders": ["Dev\\Projects", "Dev\\OpenSource", "Dev\\Labs"]
+}

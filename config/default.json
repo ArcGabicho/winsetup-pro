@@ -1,0 +1,42 @@
+{
+  "$schema": "./schema.json",
+  "meta": {
+    "configVersion": 1
+  },
+  "profile": "custom",
+  "applications": [],
+  "settings": {
+    "logLevel": "INFO",
+    "createBackups": true,
+    "restartPrompt": true,
+    "errorPolicy": {
+      "critical": "abort",
+      "nonCritical": "skip"
+    }
+  },
+  "git": {
+    "enabled": false,
+    "defaultBranch": "main",
+    "pullRebase": "false",
+    "credentialHelper": "manager",
+    "editor": null,
+    "userName": null,
+    "userEmail": null
+  },
+  "wsl": {
+    "enabled": false,
+    "distribution": null,
+    "setDefaultVersion2": true
+  },
+  "ssh": {
+    "enabled": false,
+    "keyType": "ed25519"
+  },
+  "fonts": [],
+  "folders": [],
+  "environment": {
+    "user": {},
+    "machine": {},
+    "path": []
+  }
+}
