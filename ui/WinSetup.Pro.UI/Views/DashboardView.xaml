@@ -1,56 +1,97 @@
 <UserControl x:Class="WinSetup.Pro.UI.Views.DashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:v="clr-namespace:WinSetup.Pro.UI.Views">
-    <StackPanel MaxWidth="820" HorizontalAlignment="Left">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="880" HorizontalAlignment="Left">
 
         <TextBlock Style="{StaticResource H1}" Text="Prepare your Windows workstation" />
         <TextBlock Style="{StaticResource Muted}"
                    Text="Choose how to configure this PC. Nothing is changed until you review and confirm." />
 
-        <!-- Resume banner -->
-        <Border Style="{StaticResource CardPanel}" Margin="0,16,0,0"
-                BorderBrush="{DynamicResource Warn}"
+        <!-- Resume banner (InfoBar style) -->
+        <Border Margin="0,18,0,0" CornerRadius="8" Padding="16,14"
+                Background="{DynamicResource AccentSubtle}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
                 Visibility="{Binding ShowResume, Converter={StaticResource BoolToVis}}">
             <StackPanel>
-                <TextBlock Style="{StaticResource H2}" Text="Previous setup detected" Margin="0,0,0,4" />
-                <TextBlock Style="{StaticResource Muted}">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                               Foreground="{DynamicResource Accent}" FontSize="16" Margin="0,0,9,0" />
+                    <TextBlock Text="Previous setup detected" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Style="{StaticResource Muted}" Margin="25,4,0,0">
                     <Run Text="{Binding Journal.Profile, Mode=OneWay}" /><Run Text=" - " /><Run Text="{Binding Journal.Counts.Completed, Mode=OneWay}" /><Run Text=" done, " /><Run Text="{Binding Journal.Counts.Pending, Mode=OneWay}" /><Run Text=" pending, " /><Run Text="{Binding Journal.Counts.Failed, Mode=OneWay}" /><Run Text=" failed" />
                 </TextBlock>
-                <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                <StackPanel Orientation="Horizontal" Margin="25,12,0,0">
                     <Button Style="{StaticResource Primary}" Content="Resume setup" Command="{Binding ResumeCommand}" />
-                    <Button Content="Dismiss" Margin="8,0,0,0" Command="{Binding DismissResumeCommand}" />
+                    <Button Style="{StaticResource Subtle}" Content="Dismiss" Margin="6,0,0,0"
+                            Command="{Binding DismissResumeCommand}" />
                 </StackPanel>
             </StackPanel>
         </Border>
 
-        <!-- Actions -->
-        <WrapPanel Margin="0,16,0,0">
-            <Button Style="{StaticResource Primary}" Content="Choose a profile" Width="180" Height="44"
-                    Margin="0,0,10,10" Command="{Binding StartCommand}" />
-            <Button Content="Build a custom setup" Width="180" Height="44"
-                    Margin="0,0,10,10" Command="{Binding CustomCommand}" />
-        </WrapPanel>
+        <!-- Primary actions -->
+        <Grid Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="16" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Padding="0" Command="{Binding StartCommand}" Cursor="Hand"
+                    HorizontalContentAlignment="Stretch" BorderThickness="0" Background="Transparent">
+                <Border Style="{StaticResource CardPanel}" Padding="20">
+                    <StackPanel>
+                        <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource AccentSubtle}"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="&#xE8A9;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       Foreground="{DynamicResource Accent}" FontSize="17"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Choose a profile" FontWeight="SemiBold" FontSize="15" Margin="0,12,0,0" />
+                        <TextBlock Style="{StaticResource Muted}" Margin="0,4,0,0"
+                                   Text="minimal, .NET, Full Stack, Enterprise - a curated set you can tweak." />
+                    </StackPanel>
+                </Border>
+            </Button>
+
+            <Button Grid.Column="2" Padding="0" Command="{Binding CustomCommand}" Cursor="Hand"
+                    HorizontalContentAlignment="Stretch" BorderThickness="0" Background="Transparent">
+                <Border Style="{StaticResource CardPanel}" Padding="20">
+                    <StackPanel>
+                        <Border Width="34" Height="34" CornerRadius="8" Background="{DynamicResource BgAlt}"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="&#xE71D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       Foreground="{DynamicResource FgMuted}" FontSize="17"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Build a custom setup" FontWeight="SemiBold" FontSize="15" Margin="0,12,0,0" />
+                        <TextBlock Style="{StaticResource Muted}" Margin="0,4,0,0"
+                                   Text="Pick individual components across every category." />
+                    </StackPanel>
+                </Border>
+            </Button>
+        </Grid>
 
         <!-- System card -->
-        <Border Style="{StaticResource CardPanel}" Margin="0,10,0,0">
+        <Border Style="{StaticResource CardPanel}" Margin="0,16,0,0">
             <StackPanel>
-                <TextBlock Style="{StaticResource H2}" Text="This machine" Margin="0,0,0,8" />
+                <TextBlock Style="{StaticResource H2}" Text="This machine" Margin="0,0,0,10" />
                 <Grid>
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130" /><ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
                     </Grid.RowDefinitions>
-                    <TextBlock Grid.Row="0" Style="{StaticResource Muted}" Text="Windows" Margin="0,2,16,2" />
-                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding System.OsCaption}" Margin="0,2" />
-                    <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Text="PowerShell" Margin="0,2,16,2" />
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding System.PsVersion}" Margin="0,2" />
-                    <TextBlock Grid.Row="2" Style="{StaticResource Muted}" Text="winget" Margin="0,2,16,2" />
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding System.WingetVersion}" Margin="0,2" />
-                    <TextBlock Grid.Row="3" Style="{StaticResource Muted}" Text="WSL" Margin="0,2,16,2" />
-                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding System.WslPresent}" Margin="0,2" />
-                    <TextBlock Grid.Row="4" Style="{StaticResource Muted}" Text="Administrator" Margin="0,2,16,2" />
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding System.IsAdmin}" Margin="0,2" />
+                    <TextBlock Grid.Row="0" Style="{StaticResource Muted}" Text="Windows" Margin="0,3" />
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding System.OsCaption}" Margin="0,3" />
+                    <TextBlock Grid.Row="1" Style="{StaticResource Muted}" Text="PowerShell" Margin="0,3" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding System.PsVersion}" Margin="0,3" />
+                    <TextBlock Grid.Row="2" Style="{StaticResource Muted}" Text="winget" Margin="0,3" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding System.WingetVersion}" Margin="0,3" />
+                    <TextBlock Grid.Row="3" Style="{StaticResource Muted}" Text="WSL" Margin="0,3" />
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding System.WslPresent}" Margin="0,3" />
+                    <TextBlock Grid.Row="4" Style="{StaticResource Muted}" Text="Administrator" Margin="0,3" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding System.IsAdmin}" Margin="0,3" />
                 </Grid>
             </StackPanel>
         </Border>

@@ -3,9 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:WinSetup.Pro.UI.ViewModels"
         xmlns:v="clr-namespace:WinSetup.Pro.UI.Views"
-        Title="WinSetup Pro" Height="720" Width="1080" MinHeight="560" MinWidth="880"
+        Title="WinSetup Pro" Height="740" Width="1120" MinHeight="580" MinWidth="900"
         Background="{DynamicResource Bg}" WindowStartupLocation="CenterScreen"
-        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True" SnapsToDevicePixels="True">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><v:DashboardView /></DataTemplate>
@@ -17,71 +19,140 @@
         <DataTemplate DataType="{x:Type vm:DiagnosticsViewModel}"><v:DiagnosticsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:HistoryViewModel}"><v:HistoryView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView /></DataTemplate>
+
+        <Style x:Key="NavGlyph" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="Width" Value="22" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+        </Style>
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="216" />
+            <ColumnDefinition Width="240" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <!-- Nav rail -->
-        <Border Grid.Column="0" Background="{DynamicResource Sidebar}">
+        <!-- ================= Nav pane (Windows 11 style) ================= -->
+        <Border Grid.Column="0" Background="{DynamicResource Sidebar}"
+                BorderBrush="{DynamicResource Border}" BorderThickness="0,0,1,0">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Margin="18,20,18,14">
-                    <TextBlock Text="WinSetup Pro" FontFamily="Segoe UI Semibold" FontSize="16"
-                               Foreground="{DynamicResource AccentFg}" />
+                <StackPanel DockPanel.Dock="Top" Margin="22,24,22,18">
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="26" Height="26" CornerRadius="6" Background="{DynamicResource Accent}"
+                                VerticalAlignment="Center">
+                            <TextBlock Text="&#xE977;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                       Foreground="White" FontSize="14" HorizontalAlignment="Center"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="WinSetup Pro" FontFamily="Segoe UI Variable Display, Segoe UI Semibold"
+                                   FontWeight="SemiBold" FontSize="16" Margin="10,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
                     <TextBlock Text="Reproducible Windows environments" FontSize="11"
-                               Foreground="#8A909B" Margin="0,2,0,0" />
+                               Foreground="{DynamicResource FgFaint}" Margin="0,6,0,0" />
                 </StackPanel>
 
-                <StackPanel DockPanel.Dock="Bottom" Margin="18,10,18,16">
-                    <Border Background="#22FFFFFF" CornerRadius="6" Padding="10,7">
+                <StackPanel DockPanel.Dock="Bottom" Margin="14,10,14,16">
+                    <Border Background="{DynamicResource BgAlt}" CornerRadius="8" Padding="12,10"
+                            BorderBrush="{DynamicResource Border}" BorderThickness="1">
                         <StackPanel>
-                            <TextBlock Text="{Binding HostBadge}" Foreground="{DynamicResource SidebarFg}" FontSize="12" />
-                            <TextBlock Text="This app is not elevated" Foreground="#8A909B" FontSize="10" />
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE7EE;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           FontSize="13" Foreground="{DynamicResource FgMuted}" Margin="0,0,7,0"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding HostBadge}" Foreground="{DynamicResource Fg}"
+                                           FontSize="12.5" FontWeight="SemiBold" />
+                            </StackPanel>
+                            <TextBlock Text="The app is not elevated" Foreground="{DynamicResource FgFaint}"
+                                       FontSize="10.5" Margin="20,1,0,0" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
 
-                <StackPanel Margin="0,6,0,0">
-                    <RadioButton Style="{StaticResource NavButton}" Content="Dashboard" GroupName="nav"
+                <StackPanel Margin="0,4,0,0">
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
                                  IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=Dashboard, Mode=OneWay}"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Dashboard" />
-                    <RadioButton Style="{StaticResource NavButton}" Content="Profiles" GroupName="nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Profiles" />
-                    <RadioButton Style="{StaticResource NavButton}" Content="Components" GroupName="nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Components" />
-                    <RadioButton Style="{StaticResource NavButton}" Content="Diagnostics" GroupName="nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Diagnostics" />
-                    <RadioButton Style="{StaticResource NavButton}" Content="History" GroupName="nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="History" />
-                    <RadioButton Style="{StaticResource NavButton}" Content="Settings" GroupName="nav"
-                                 Command="{Binding NavigateCommand}" CommandParameter="Settings" />
+                                 Command="{Binding NavigateCommand}" CommandParameter="Dashboard">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE80F;" />
+                            <TextBlock Text="Dashboard" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=Profiles, Mode=OneWay}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Profiles">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE8A9;" />
+                            <TextBlock Text="Profiles" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=Components, Mode=OneWay}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Components">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE71D;" />
+                            <TextBlock Text="Components" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=Diagnostics, Mode=OneWay}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Diagnostics">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE9D9;" />
+                            <TextBlock Text="Diagnostics" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=History, Mode=OneWay}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="History">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE81C;" />
+                            <TextBlock Text="History" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
+                    <RadioButton Style="{StaticResource NavButton}" GroupName="nav"
+                                 IsChecked="{Binding CurrentPage, Converter={StaticResource EnumMatch}, ConverterParameter=Settings, Mode=OneWay}"
+                                 Command="{Binding NavigateCommand}" CommandParameter="Settings">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Style="{StaticResource NavGlyph}" Text="&#xE713;" />
+                            <TextBlock Text="Settings" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </RadioButton>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <!-- Content -->
+        <!-- ================= Content ================= -->
         <Grid Grid.Column="1">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,24">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="36,30" >
                 <ContentControl Content="{Binding Current}" />
             </ScrollViewer>
 
-            <!-- Error bar -->
-            <Border VerticalAlignment="Top" Background="{DynamicResource Bad}" Padding="16,10"
+            <!-- InfoBar-style error -->
+            <Border VerticalAlignment="Top" Margin="24,20" CornerRadius="7"
+                    Background="#FDF3F2" BorderBrush="#F0C9C4" BorderThickness="1" Padding="14,10"
                     Visibility="{Binding Current.Error, Converter={StaticResource NullToVis}}">
-                <TextBlock Text="{Binding Current.Error}" Foreground="White" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="&#xEA39;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                               Foreground="{DynamicResource Bad}" FontSize="15" Margin="0,0,10,0"
+                               VerticalAlignment="Top" />
+                    <TextBlock Text="{Binding Current.Error}" Foreground="#7A241B" MaxWidth="640" />
+                </StackPanel>
             </Border>
 
             <!-- Busy overlay -->
-            <Border Background="#66000000"
+            <Border Background="#99FFFFFF"
                     Visibility="{Binding Current.IsBusy, Converter={StaticResource BoolToVis}}">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <ProgressBar IsIndeterminate="True" Width="180" Height="4"
-                                 Foreground="{DynamicResource Accent}" Background="Transparent" BorderThickness="0" />
-                    <TextBlock Text="Working..." Foreground="White" HorizontalAlignment="Center" Margin="0,10,0,0" />
-                </StackPanel>
+                <Border Style="{StaticResource CardPanel}" Padding="26,20" HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+                    <StackPanel HorizontalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="160" Height="4" />
+                        <TextBlock Text="Working..." HorizontalAlignment="Center" Margin="0,12,0,0"
+                                   Foreground="{DynamicResource FgMuted}" />
+                    </StackPanel>
+                </Border>
             </Border>
         </Grid>
     </Grid>

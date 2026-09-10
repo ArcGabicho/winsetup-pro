@@ -10,78 +10,113 @@
     <cv:StateToBrush x:Key="StateToBrush" />
     <cv:BoolToBrush x:Key="BoolToBrush" />
 
-    <!-- Fallback palette (ThemeManager overwrites these at startup). -->
-    <SolidColorBrush x:Key="Bg" Color="#F5F6F8" />
-    <SolidColorBrush x:Key="BgAlt" Color="#FFFFFF" />
+    <!-- ============================================================
+         Fluent light palette (Windows 11) - ThemeManager overwrites
+         these at startup so the values here are just design-time
+         defaults / the light theme.
+         ============================================================ -->
+    <SolidColorBrush x:Key="Bg" Color="#F4F7FB" />
+    <SolidColorBrush x:Key="BgAlt" Color="#EEF3F9" />
     <SolidColorBrush x:Key="Card" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="Border" Color="#E1E4E8" />
-    <SolidColorBrush x:Key="Fg" Color="#1F2328" />
-    <SolidColorBrush x:Key="FgMuted" Color="#656D76" />
-    <SolidColorBrush x:Key="Sidebar" Color="#1F2328" />
-    <SolidColorBrush x:Key="SidebarFg" Color="#D0D4DA" />
-    <SolidColorBrush x:Key="Accent" Color="#3B82F6" />
+    <SolidColorBrush x:Key="Layer" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="LayerHover" Color="#F3F6FA" />
+    <SolidColorBrush x:Key="Border" Color="#E4E9F1" />
+    <SolidColorBrush x:Key="BorderStrong" Color="#CED6E2" />
+    <SolidColorBrush x:Key="Fg" Color="#1A1F29" />
+    <SolidColorBrush x:Key="FgMuted" Color="#5B6472" />
+    <SolidColorBrush x:Key="FgFaint" Color="#8A93A3" />
+    <SolidColorBrush x:Key="Sidebar" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="SidebarFg" Color="#3A4251" />
+    <SolidColorBrush x:Key="Accent" Color="#0067C0" />
+    <SolidColorBrush x:Key="AccentHover" Color="#1A78C8" />
+    <SolidColorBrush x:Key="AccentPressed" Color="#005BA6" />
+    <SolidColorBrush x:Key="AccentSubtle" Color="#E9F2FB" />
+    <SolidColorBrush x:Key="AccentSubtleHover" Color="#DCEBF8" />
     <SolidColorBrush x:Key="AccentFg" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="Ok" Color="#22A06B" />
-    <SolidColorBrush x:Key="Warn" Color="#D98A00" />
-    <SolidColorBrush x:Key="Bad" Color="#D1493F" />
+    <SolidColorBrush x:Key="Ok" Color="#0F7B0F" />
+    <SolidColorBrush x:Key="Warn" Color="#9D5D00" />
+    <SolidColorBrush x:Key="Bad" Color="#C42B1C" />
+    <SolidColorBrush x:Key="Track" Color="#E6ECF4" />
 
+    <DropShadowEffect x:Key="CardShadow" BlurRadius="16" ShadowDepth="2" Direction="270"
+                      Opacity="0.10" Color="#2A3A57" RenderingBias="Quality" />
+
+    <!-- ===================== Typography ===================== -->
     <Style TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Fg}" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13.5" />
         <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
     </Style>
 
     <Style x:Key="H1" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Fg}" />
-        <Setter Property="FontFamily" Value="Segoe UI Semibold" />
-        <Setter Property="FontSize" Value="22" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI Semibold" />
+        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
     <Style x:Key="H2" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource Fg}" />
-        <Setter Property="FontFamily" Value="Segoe UI Semibold" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Small, Segoe UI Semibold" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="Margin" Value="0,8,0,4" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,10,0,6" />
     </Style>
 
     <Style x:Key="Muted" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource FgMuted}" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13" />
     </Style>
 
+    <!-- ===================== Card ===================== -->
     <Style x:Key="CardPanel" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource Card}" />
         <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="16" />
+        <Setter Property="Padding" Value="20" />
         <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Effect" Value="{StaticResource CardShadow}" />
     </Style>
 
+    <!-- ===================== Buttons ===================== -->
     <Style TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource Fg}" />
-        <Setter Property="Background" Value="{DynamicResource BgAlt}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Border}" />
+        <Setter Property="Background" Value="{DynamicResource Layer}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="Padding" Value="14,8" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="MinHeight" Value="34" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="b" Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
-                                          Margin="{TemplateBinding Padding}" />
+                                          Margin="{TemplateBinding Padding}"
+                                          RecognizesAccessKey="True" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="b" Property="Opacity" Value="0.88" />
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource LayerHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource BgAlt}" />
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="b" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="b" Property="BorderBrush" Value="{DynamicResource Accent}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -93,32 +128,97 @@
         <Setter Property="Background" Value="{DynamicResource Accent}" />
         <Setter Property="Foreground" Value="{DynamicResource AccentFg}" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontFamily" Value="Segoe UI Semibold" />
-    </Style>
-
-    <Style x:Key="NavButton" TargetType="RadioButton">
-        <Setter Property="Foreground" Value="{DynamicResource SidebarFg}" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="b" Background="Transparent" CornerRadius="6" Padding="12,9" Margin="6,1">
-                        <ContentPresenter VerticalAlignment="Center" />
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="b" Background="{TemplateBinding Background}" CornerRadius="5">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="b" Property="Background" Value="#22FFFFFF" />
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource AccentHover}" />
                         </Trigger>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="b" Property="Background" Value="{DynamicResource Accent}" />
-                            <Setter Property="Foreground" Value="{DynamicResource AccentFg}" />
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource AccentPressed}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="b" Property="Opacity" Value="0.45" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="Subtle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+
+    <!-- ===================== Nav item (Windows 11 NavigationView) ===================== -->
+    <Style x:Key="NavButton" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{DynamicResource SidebarFg}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="b" Background="Transparent" CornerRadius="5" Height="38" Margin="6,2">
+                        <Grid>
+                            <Border x:Name="pill" Width="3" Height="18" CornerRadius="1.5" HorizontalAlignment="Left"
+                                    Margin="2,0,0,0" Background="{DynamicResource Accent}" Visibility="Collapsed" />
+                            <ContentPresenter VerticalAlignment="Center" Margin="14,0,10,0" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource LayerHover}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="b" Property="Background" Value="{DynamicResource AccentSubtle}" />
+                            <Setter TargetName="pill" Property="Visibility" Value="Visible" />
+                            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===================== Inputs ===================== -->
+    <Style TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{DynamicResource Fg}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+
+    <Style TargetType="ComboBox">
+        <Setter Property="Foreground" Value="{DynamicResource Fg}" />
+        <Setter Property="Background" Value="{DynamicResource Layer}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderStrong}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI" />
+        <Setter Property="FontSize" Value="13.5" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="MinHeight" Value="32" />
+    </Style>
+
+    <Style TargetType="ProgressBar">
+        <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+        <Setter Property="Background" Value="{DynamicResource Track}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Height" Value="6" />
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="10" />
     </Style>
 
 </ResourceDictionary>

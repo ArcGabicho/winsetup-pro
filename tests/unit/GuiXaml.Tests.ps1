@@ -28,11 +28,14 @@ Describe 'GUI XAML sanity' {
 
         $missing = @()
         foreach ($file in Get-ChildItem $script:UiDir -Recurse -Filter '*.xaml') {
-            $used = [regex]::Matches((Get-Content -LiteralPath $file.FullName -Raw), 'StaticResource\s+([A-Za-z0-9_]+)') |
+            $raw = Get-Content -LiteralPath $file.FullName -Raw
+            # keys defined locally in this file (e.g. Window.Resources) also count
+            $local = [regex]::Matches($raw, 'x:Key="([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
+            $known = @($defined) + @($local) | Select-Object -Unique
+            $used = [regex]::Matches($raw, 'StaticResource\s+([A-Za-z0-9_]+)') |
                 ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique
             foreach ($u in $used) {
-                # skip framework keys like {x:Type Button}
-                if ($u -notin $defined -and $u -notmatch '^\{') { $missing += "$($file.Name): {StaticResource $u}" }
+                if ($u -notin $known -and $u -notmatch '^\{') { $missing += "$($file.Name): {StaticResource $u}" }
             }
         }
         $missing | Should -BeNullOrEmpty -Because ($missing -join '; ')
