@@ -6,6 +6,25 @@ the project aims for [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+_Nothing yet._
+
+## [0.1.0] - 2026-09-10
+
+First milestone: the Core engine, 40 components, five profiles, an 80-test
+Pester suite and CI. Built in eight phases.
+
+### Phase 8 — Documentation
+
+* `docs/SECURITY.md`, `docs/MODULES.md` (component authoring guide with the
+  lifecycle diagram, helper reference and pitfalls) and `docs/TROUBLESHOOTING.md`.
+* `README.md` reworked: quick start, contents index, profile table, real
+  dry-run output, links to the deep-dive docs; sections renumbered.
+* `CONTRIBUTING.md`: layout, release process, the `$PROFILE` naming trap.
+* `docs/ARCHITECTURE.md`: full Core file list, repository-layout and
+  runtime-output tables.
+* Removed the empty `modules/Development/` and `modules/Git/` category folders
+  (Category is a descriptor field, not the folder).
+
 ### Phase 7 — Testing (added / changed)
 
 * **80-test Pester suite** (Pester 5 or 6), all green, host-safe (TestDrive:,
@@ -183,4 +202,5 @@ the project aims for [Semantic Versioning](https://semver.org/).
 * An empty JSON array read through `Get-WinSetupConfigValue` collapses to
   `$null`; callers wrap with `@()` and `-Default @()`.
 
-[Unreleased]: https://github.com/<you>/WinSetup-Pro/commits/main
+[Unreleased]: https://github.com/<you>/WinSetup-Pro/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/<you>/WinSetup-Pro/releases/tag/v0.1.0

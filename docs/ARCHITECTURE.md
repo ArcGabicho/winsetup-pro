@@ -22,6 +22,9 @@ modules/Core/Core.psm1       The engine, imported as a single module.
   ├── Configuration.ps1      Layer / merge / lookup / validate / plan.
   ├── Privilege.ps1          Admin detection (never elevates).
   ├── SystemDetection.ps1    OS/winget/WSL/disk/net snapshot + diagnostics.
+  ├── Winget.ps1             Install-WinSetupWingetPackage, version probe, PATH refresh.
+  ├── Wsl.ps1                UTF-8 wsl.exe wrapper + locale-independent state.
+  ├── Backup.ps1             Backup-WinSetupFile → backup/<category>/<timestamp>/.
   ├── UI.ps1                 All console rendering (silenceable).
   ├── ComponentModel.ps1     New-WinSetupComponent / DetectionResult / schema.
   ├── Registry.ps1           Discover components, topological ordering.
@@ -30,7 +33,8 @@ modules/Core/Core.psm1       The engine, imported as a single module.
   └── Engine.ps1             Context + Invoke-WinSetupPlan + Get-WinSetupStatus.
         │
         ▼
-modules/<Category>/*.ps1     Components. Auto-discovered. Never imported by name.
+modules/<name>/*.ps1         Components. Auto-discovered. Never imported by name.
+                             The folder is organisational; `Category` is a field.
 ```
 
 Rationale for a **flat file set inside one module** instead of nested
@@ -151,7 +155,7 @@ so tests stay quiet. No secret is ever passed to the logger.
 
 ## 10. Extensibility (no core rewrite required)
 
-* **New tools** → new files under `modules/<Category>/`.
+* **New tools** → a new file under `modules/<name>/` (see `docs/MODULES.md`).
 * **New profiles** → JSON in `profiles/`.
 * **New feature blocks** → extend `Resolve-WinSetupPlan`'s feature list.
 * **GUI / TUI** → alternative front ends over the same
@@ -178,3 +182,31 @@ so tests stay quiet. No secret is ever passed to the logger.
   even under `pwsh -File`, but the `powershell-profile` component still derives
   the paths from the bare string and falls back to `Documents\PowerShell\` so it
   never dies on a host that strips them.
+
+## 12. Repository layout
+
+| Path | What |
+|---|---|
+| `WinSetup.ps1` | CLI / composition root — parses args, builds config + context, dispatches |
+| `modules/Core/` | the engine, loaded as one module (`Core.psm1`) |
+| `modules/<name>/` | component files, auto-discovered; `_*.ps1` and `*.Tests.ps1` skipped |
+| `config/default.json` | base config; `config/schema.json` documents it; `config/*.json` are examples |
+| `profiles/*.json` | the five shipped profiles |
+| `templates/powershell/` | `$PROFILE` fragments the `powershell-profile` component installs |
+| `scripts/` | `bootstrap` · `install` · `update` · `uninstall` · `diagnose` |
+| `tests/unit/` | Pester unit specs (host-safe); `tests/integration/` real-install specs (opt-in) |
+| `tests/RunTests.ps1` | test entry point (Pester 5/6) |
+| `docs/` | this file · `SECURITY.md` · `MODULES.md` · `TROUBLESHOOTING.md` |
+| `logs/` `state/` `backup/` | runtime output — git-ignored, created on first run |
+| `.github/workflows/ci.yml` | syntax check + PSScriptAnalyzer + unit suite on `windows-latest` |
+
+## 13. Runtime output
+
+| Location | Contents | Lifetime |
+|---|---|---|
+| `logs/YYYY-MM-DD_HHMMSS-<op>.log` | one structured file per run | kept; user prunes (`scripts/uninstall.ps1`) |
+| `state/last-run.json` | resumable journal of the last real run | overwritten each real run |
+| `state/last-dryrun.json` | preview journal | overwritten each dry run |
+| `state/dotfiles/<hash>/` | cloned dotfiles repos | reused / `git pull`ed |
+| `state/postinstall.json` | content hashes of post-install scripts already run | appended |
+| `backup/<area>/<timestamp>/` | pre-change copies (git, ssh, wsl, powershell, environment, dotfiles) | kept until `uninstall.ps1 -Purge` |
