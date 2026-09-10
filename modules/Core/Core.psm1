@@ -39,6 +39,7 @@ Export-ModuleMember -Function @(
     'Get-WinSetupSystemInfo', 'Test-WinSetupInternet', 'Get-WinSetupDiagnostics'
     # winget helpers
     'Install-WinSetupWingetPackage', 'Update-WinSetupSessionPath', 'Get-WinSetupExeVersion'
+    'Invoke-WinSetupProcess'
     # WSL helpers
     'Invoke-WinSetupWsl', 'Get-WinSetupWslInfo', 'Format-WinSetupWslConfig'
     # Backup

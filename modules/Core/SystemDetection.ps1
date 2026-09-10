@@ -23,7 +23,9 @@ function Get-WinSetupSystemInfo {
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     $wingetVersion = $null
     if ($winget) {
-        try { $wingetVersion = ((& winget --version) 2>$null | Select-Object -First 1) } catch { }
+        # Timeboxed: a cold CI runner's first winget call can hang for minutes.
+        $wv = Invoke-WinSetupProcess -FilePath $winget.Source -Arguments @('--version') -TimeoutMs 8000
+        if ($wv) { $wingetVersion = ($wv -split "`n" | Where-Object { $_.Trim() } | Select-Object -First 1).Trim() }
     }
 
     $build = if ($os) { [int]$os.BuildNumber } else { [System.Environment]::OSVersion.Version.Build }

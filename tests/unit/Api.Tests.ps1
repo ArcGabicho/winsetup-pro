@@ -55,13 +55,19 @@ Describe 'Invoke-WinSetupApi - read verbs' {
         (Api status).data | ForEach-Object { $_.Id } | Should -Contain 'git'
     }
 
-    It 'plan (minimal) -> dry-run changes, action is always a string, git = skip' {
+    It 'plan (minimal) -> dry-run, every change action is a known string' {
         $r = Api plan @{ profile = 'minimal' }
         $r.ok | Should -BeTrue
         $r.data.dryRun | Should -BeTrue
         @($r.data.changes).Count | Should -BeGreaterThan 0
-        foreach ($c in $r.data.changes) { $c.action | Should -BeOfType ([string]) }
-        ($r.data.changes | Where-Object { $_.component -eq 'git' }).action | Should -Be 'skip'
+        $valid = @('skip', 'skip (needs elevation)', 'install', 'configure', 'install+configure')
+        foreach ($c in $r.data.changes) {
+            $c.action | Should -BeOfType ([string])
+            $c.action | Should -BeIn $valid -Because "component '$($c.component)'"
+        }
+        # git is present on any dev machine -> it is never a fresh 'install'
+        ($r.data.changes | Where-Object { $_.component -eq 'git' }).action |
+            Should -BeIn @('skip', 'configure') -Because 'git is installed; only its config may differ'
         $r.data.preserve | Should -Not -BeNullOrEmpty
     }
 

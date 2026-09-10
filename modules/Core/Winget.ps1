@@ -14,24 +14,58 @@ function Update-WinSetupSessionPath {
     $env:Path = @($machine, $user | Where-Object { $_ }) -join ';'
 }
 
+function Invoke-WinSetupProcess {
+    <#
+    .SYNOPSIS
+        Runs a native command with a HARD timeout and returns its stdout, or
+        $null on timeout / launch failure. Cheap (no child PowerShell). Keeps a
+        slow or hung "<tool> --version" from stalling detection.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$FilePath,
+        [string[]]$Arguments = @(),
+        [int]$TimeoutMs = 8000
+    )
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $FilePath
+    foreach ($a in $Arguments) { $psi.ArgumentList.Add($a) }
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+
+    $proc = $null
+    try { $proc = [System.Diagnostics.Process]::Start($psi) } catch { return $null }
+    if (-not $proc) { return $null }
+
+    $stdoutTask = $proc.StandardOutput.ReadToEndAsync()
+    $null = $proc.StandardError.ReadToEndAsync()
+    if (-not $proc.WaitForExit($TimeoutMs)) {
+        try { $proc.Kill($true) } catch { try { $proc.Kill() } catch { } }
+        return $null
+    }
+    try { return $stdoutTask.GetAwaiter().GetResult() } catch { return $null }
+}
+
 function Get-WinSetupExeVersion {
     <#
     .SYNOPSIS
         Runs "<command> <version args>" and extracts a version string, or $null
-        when the command is missing / produces no match. Read-only - safe in a
-        component's Test block.
+        when the command is missing / times out / produces no match. Read-only -
+        safe in a component's Test block.
     #>
     param(
         [Parameter(Mandatory)][string]$Command,
         [string]$Pattern = '(\d+\.\d+(?:\.\d+){0,2})',
-        [string[]]$VersionArgs = @('--version')
+        [string[]]$VersionArgs = @('--version'),
+        [int]$TimeoutMs = 8000
     )
     $cmd = Get-Command $Command -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $cmd) { return $null }
-    try {
-        $raw = (& $cmd.Source @VersionArgs 2>$null | Out-String)
-        if ($raw -match $Pattern) { return $Matches[1] }
-    } catch { }
+    $raw = Invoke-WinSetupProcess -FilePath $cmd.Source -Arguments $VersionArgs -TimeoutMs $TimeoutMs
+    if ($null -eq $raw) { return $null }
+    if ($raw -match $Pattern) { return $Matches[1] }
     return $null
 }
 
