@@ -1,0 +1,39 @@
+<UserControl x:Class="WinSetup.Pro.UI.Views.RunView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="820" HorizontalAlignment="Left">
+        <TextBlock Style="{StaticResource H1}" Text="{Binding Title}" />
+
+        <Border Style="{StaticResource Card}" Margin="0,10,0,0">
+            <ItemsControl ItemsSource="{Binding Rows}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="2,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="24" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Glyph}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" />
+                            <TextBlock Grid.Column="2" Text="{Binding Status}" Style="{StaticResource Muted}" FontSize="12" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <TextBlock Style="{StaticResource H2}" Text="Overall progress" />
+        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="10"
+                     Foreground="{DynamicResource Accent}" Background="{DynamicResource BgAlt}"
+                     BorderBrush="{DynamicResource Border}" />
+        <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0">
+            <Run Text="Current: " /><Run Text="{Binding CurrentText}" />
+        </TextBlock>
+
+        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" />
+            <Button Content="View logs" Margin="8,0,0,0" Command="{Binding ViewLogsCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

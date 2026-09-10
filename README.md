@@ -17,11 +17,24 @@ Development / Cloud / Database / Environment / Customisation, five profiles, an
 ```powershell
 git clone https://github.com/<you>/WinSetup-Pro.git
 cd WinSetup-Pro
+.\scripts\install-launcher.ps1           # registers `winsetup` for your user (no admin)
 
-.\WinSetup.ps1 -Diagnose                 # is this machine ready?
-.\WinSetup.ps1 -Profile minimal -DryRun  # what would "minimal" do?
-.\WinSetup.ps1 -Profile minimal          # do it
+# open a new terminal, then:
+winsetup                                 # graphical app  (Profile -> Customize -> Review -> Apply)
+
+# ...or stay on the command line (unchanged):
+winsetup -Diagnose                       # is this machine ready?
+winsetup -Profile minimal -DryRun        # what would "minimal" do?
+winsetup -Profile minimal                # do it
+winsetup -Profile enterprise -ConfigFile company.json -NonInteractive   # automation
 ```
+
+`.\WinSetup.ps1 ...` still works exactly as before — `winsetup` is a thin
+launcher that opens the GUI when given no arguments and forwards every CLI flag
+verbatim to `WinSetup.ps1`. Build the GUI once with
+`dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained`
+(self-contained → users need no .NET). Details in
+[docs/GUI.md](docs/GUI.md).
 
 ---
 
@@ -39,8 +52,9 @@ cd WinSetup-Pro
 19. [Contributing](#19-contributing)
 
 Deep-dive docs: [Overview / user stories](docs/OVERVIEW.md) ·
-[Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) ·
-[Writing a component](docs/MODULES.md) · [Troubleshooting](docs/TROUBLESHOOTING.md)
+[Architecture](docs/ARCHITECTURE.md) · [GUI](docs/GUI.md) ·
+[Security](docs/SECURITY.md) · [Writing a component](docs/MODULES.md) ·
+[Troubleshooting](docs/TROUBLESHOOTING.md)
 
 ---
 

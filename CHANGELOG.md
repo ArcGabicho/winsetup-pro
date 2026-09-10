@@ -27,10 +27,16 @@ The engine stays the single source of truth; the GUI is a client.
   (per-user PATH + `$PROFILE` line, `WINSETUP_HOME`). `winsetup` with no flags
   opens the GUI; any CLI flag is forwarded verbatim to `WinSetup.ps1`. The
   classic CLI is unchanged. `tests/unit/Launcher.Tests.ps1`.
-* `docs/GUI.md`. Unit suite: 108 tests.
-
-_WPF app (`ui/WinSetup.Pro.UI`), elevation flow, run UX and integration tests
-land next._
+* **WPF app** — `ui/WinSetup.Pro.UI` (`net10.0-windows`, hand-rolled MVVM, **zero
+  NuGet dependencies**, `asInvoker` manifest, self-contained `win-x64` publish).
+  Pages: Dashboard, Profiles, Components, Review, Run (live progress from the
+  engine's events), Result, Diagnostics, History, Settings. `EngineClient`
+  spawns the JSON adapter; a `StringListConverter` tolerates the engine's
+  scalar-or-array JSON. Elevation via `ElevationService.RestartElevated` (`runas`)
+  offered from Review when the plan needs admin — the app itself never runs
+  elevated. Long work is async; cancel is blocked mid-component with a clear
+  message.
+* `docs/GUI.md`; CI builds the GUI on `windows-latest`. Unit suite: 112 tests.
 
 ## [0.1.0] - 2026-09-10
 

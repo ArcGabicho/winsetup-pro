@@ -39,6 +39,15 @@ jobs:
           Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -SkipPublisherCheck
           Invoke-ScriptAnalyzer -Path . -Recurse -Severity Warning, Error -ReportSummary
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build the GUI
+        shell: pwsh
+        run: dotnet build ui/WinSetup.Pro.UI/WinSetup.Pro.UI.csproj -c Release --nologo
+
       - name: Unit tests
         shell: pwsh
         run: ./tests/RunTests.ps1 -Suite unit -CI

@@ -1,0 +1,25 @@
+<UserControl x:Class="WinSetup.Pro.UI.Views.ResultView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="720" HorizontalAlignment="Left">
+        <TextBlock Style="{StaticResource H1}" Text="{Binding Headline}" />
+
+        <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Margin="0,2"><Run Text="✓ " Foreground="{DynamicResource Ok}" /><Run Text="{Binding Summary.Installed, Mode=OneWay}" /><Run Text=" installed" /></TextBlock>
+                <TextBlock Margin="0,2"><Run Text="✓ " Foreground="{DynamicResource Ok}" /><Run Text="{Binding Summary.Configured, Mode=OneWay}" /><Run Text=" configured" /></TextBlock>
+                <TextBlock Margin="0,2" Style="{StaticResource Muted}"><Run Text="↷ " /><Run Text="{Binding Summary.Skipped, Mode=OneWay}" /><Run Text=" already installed / skipped" /></TextBlock>
+                <TextBlock Margin="0,2"><Run Text="✕ " Foreground="{DynamicResource Bad}" /><Run Text="{Binding Summary.Failed, Mode=OneWay}" /><Run Text=" failed" /></TextBlock>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+            <Button Style="{StaticResource Primary}" Content="Done" Command="{Binding DoneCommand}" />
+            <Button Content="Retry failed" Margin="8,0,0,0" Command="{Binding RetryCommand}"
+                    Visibility="{Binding HasFailures, Converter={StaticResource BoolToVis}}" />
+            <Button Content="Resume later" Margin="8,0,0,0" Command="{Binding ResumeLaterCommand}"
+                    Visibility="{Binding HasFailures, Converter={StaticResource BoolToVis}}" />
+            <Button Content="Open logs" Margin="8,0,0,0" Command="{Binding OpenLogsCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>
