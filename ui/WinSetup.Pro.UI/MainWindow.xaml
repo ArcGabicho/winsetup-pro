@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:WinSetup.Pro.UI.ViewModels"
         xmlns:v="clr-namespace:WinSetup.Pro.UI.Views"
         Title="WinSetup Pro" Height="740" Width="1120" MinHeight="580" MinWidth="900"
+        Icon="Assets/app.ico"
         Background="{DynamicResource Bg}" WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI Variable Text, Segoe UI"
         TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"

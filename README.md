@@ -1,7 +1,11 @@
+<img src="ui/WinSetup.Pro.UI/Assets/app-256.png" width="96" align="left" alt="WinSetup Pro" />
+
 # WinSetup Pro
 
 > Windows developer setup assistant — turn a clean Windows install into a
 > configured development workstation, reproducibly, in minutes.
+
+<br clear="left" />
 
 WinSetup Pro is a small, modular PowerShell product. You describe the machine
 you want (a **profile** or a list of **components**) and the engine works out

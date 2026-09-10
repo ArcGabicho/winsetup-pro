@@ -37,4 +37,25 @@ Describe 'GUI project' {
         (Get-Content -LiteralPath (Join-Path (Split-Path $script:Csproj) 'app.manifest') -Raw) |
             Should -Match 'requestedExecutionLevel level="asInvoker"'
     }
+
+    It 'ships a multi-size app icon wired into the exe and the window' {
+        $dir = Split-Path $script:Csproj
+        $ico = Join-Path $dir 'Assets\app.ico'
+        $ico | Should -Exist
+        (Get-Item $ico).Length | Should -BeGreaterThan 3000   # PNG-packed 16..256
+
+        $csproj = Get-Content -LiteralPath $script:Csproj -Raw
+        $csproj | Should -Match '<ApplicationIcon>Assets\\app\.ico</ApplicationIcon>'
+        $csproj | Should -Match '<Resource Include="Assets\\app\.ico"'
+        (Get-Content -LiteralPath (Join-Path $dir 'MainWindow.xaml') -Raw) | Should -Match 'Icon="Assets/app\.ico"'
+    }
+
+    It 'the built exe carries a Win32 icon' -Skip:(-not $script:HasDotnet) {
+        Add-Type -AssemblyName System.Drawing
+        $exe = Join-Path (Split-Path $script:Csproj) 'bin\Debug\net10.0-windows\WinSetup.Pro.UI.exe'
+        if (-not (Test-Path $exe)) { Set-ItResult -Skipped -Because 'exe not built'; return }
+        $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($exe)
+        $icon | Should -Not -BeNullOrEmpty
+        $icon.Dispose()
+    }
 }

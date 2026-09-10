@@ -13,10 +13,16 @@
     <AssemblyTitle>WinSetup Pro</AssemblyTitle>
     <Product>WinSetup Pro</Product>
     <Version>0.2.0</Version>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <!-- No PackageReferences: everything used ships in the WPF shared framework
          (PresentationFramework) or the BCL (System.Text.Json). dotnet build and
          a self-contained win-x64 publish stay offline and reproducible. -->
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- also embedded as a resource so Window.Icon can bind to it -->
+    <Resource Include="Assets\app.ico" />
+  </ItemGroup>
 
 </Project>
