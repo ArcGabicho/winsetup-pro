@@ -1,24 +1,70 @@
-<img src="ui/WinSetup.Pro.UI/Assets/app-256.png" width="96" align="left" alt="WinSetup Pro" />
+<div align="center">
+
+<img src="ui/WinSetup.Pro.UI/Assets/app-256.png" width="120" alt="WinSetup Pro logo" />
 
 # WinSetup Pro
 
-> Windows developer setup assistant — turn a clean Windows install into a
-> configured development workstation, reproducibly, in minutes.
+**Turn a clean Windows install into a configured developer workstation — reproducibly, in minutes.**
 
-<br clear="left" />
+[![CI](https://github.com/ArcGabicho/winsetup-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/ArcGabicho/winsetup-pro/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![PowerShell 7+](https://img.shields.io/badge/PowerShell-7%2B-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/powershell/)
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-WinSetup Pro is a small, modular PowerShell product. You describe the machine
-you want (a **profile** or a list of **components**) and the engine works out
-what is missing and applies **only that**. Running it twice changes nothing the
-second time.
+[Quick start](#quick-start) · [How it works](#how-it-works) · [Docs](docs/) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
-**Status:** Phases 1–8 complete plus a WPF GUI. Core engine + CLI, **40
-components** across Development / Cloud / Database / Environment / Customisation,
-five profiles, a 117-test Pester suite, and CI. See [CHANGELOG.md](CHANGELOG.md).
+</div>
+
+---
+
+WinSetup Pro is a small, modular PowerShell product with an optional WPF desktop
+app. You describe the machine you want — a **profile** or a list of
+**components** — and the engine detects what is missing and applies **only
+that**. Running it a second time changes nothing.
+
+**Current status:** `0.1.0` — phases 1–8 complete, plus a Windows 11-style
+desktop app (`0.2.0`). Core engine and CLI, **40 components** across
+Development / Cloud / Database / Environment / Customisation, five built-in
+profiles, a 117-test Pester suite, and CI on `windows-latest`.
+
+## Table of contents
+
+- [Highlights](#highlights)
+- [Quick start](#quick-start)
+- [Requirements](#requirements)
+- [How it works](#how-it-works)
+- [Usage](#usage)
+- [Profiles](#profiles)
+- [Configuration](#configuration)
+- [What it sets up](#what-it-sets-up)
+- [Dry-run and safety](#dry-run-and-safety)
+- [Troubleshooting](#troubleshooting)
+- [Project layout](#project-layout)
+- [Development](#development)
+- [Roadmap](#roadmap)
+- [Versioning](#versioning)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+- [Acknowledgements](#acknowledgements)
+
+## Highlights
+
+| | |
+|---|---|
+| **Idempotent** | Every component runs a read-only `Test` before it `Install`s or `Configure`s. A second run is a no-op. |
+| **Dry-run first** | `-DryRun` prints the full plan and touches nothing — it is an engine mode, not a per-module `if`. |
+| **Reversible** | A per-run **journal** enables `-Resume` after an interruption; risky changes are backed up under `backup/` before they happen. |
+| **Safe by default** | No silent overwrites, no credentials requested or stored, and Windows Defender / firewall / security policy are never touched. |
+| **Declarative** | Machines are described in JSON (`config/`, `profiles/`); layers deep-merge. |
+| **Modular** | Each tool or config task is a self-describing **component** file. The core never changes when you add one. |
+| **Two front ends, one engine** | The CLI and the desktop app are both clients of the same `modules/Core` engine — no duplicated install logic. |
+| **Observable** | Structured, level-based logs per run under `logs/`. |
 
 ## Quick start
 
-**Open the graphical app — one command:**
+### Graphical app — one command
 
 ```powershell
 git clone https://github.com/ArcGabicho/winsetup-pro.git
@@ -26,121 +72,111 @@ cd winsetup-pro
 pwsh -File .\scripts\gui.ps1
 ```
 
-`gui.ps1` builds the app the first time (needs the [.NET SDK 10+](https://dotnet.microsoft.com/download);
-takes ~10 s) and then launches it. In the window: **Profile → Customize →
-Review → Apply**. Nothing is changed until you confirm.
+`gui.ps1` builds the app on first run (needs the
+[.NET SDK 10+](https://dotnet.microsoft.com/download); about 10 s) and then
+launches it. The window walks you through **Profile → Customize → Review →
+Apply**. Nothing changes until you confirm.
 
-**Prefer the command line?** It works exactly as before — no build, no SDK:
+### Command line — no build, no SDK
 
 ```powershell
 pwsh -File .\WinSetup.ps1 -Diagnose                 # is this machine ready?
-pwsh -File .\WinSetup.ps1 -Profile minimal -DryRun  # preview
-pwsh -File .\WinSetup.ps1 -Profile minimal          # apply
+pwsh -File .\WinSetup.ps1 -Profile minimal -DryRun  # preview the plan
+pwsh -File .\WinSetup.ps1 -Profile minimal          # apply it
 pwsh -File .\WinSetup.ps1 -Profile enterprise -ConfigFile company.json -NonInteractive
 ```
 
-**Want a global `winsetup` command** (opens the GUI with no args, forwards every
-CLI flag to `WinSetup.ps1`)?
+On a fresh machine, bootstrap the prerequisites first:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
+```
+
+`bootstrap.ps1` checks PowerShell, execution policy and `winget`, then hands off
+to the local `WinSetup.ps1`. There is intentionally **no `irm … | iex`
+one-liner** — see [Security](#security).
+
+### Global `winsetup` command
 
 ```powershell
 .\scripts\install-launcher.ps1     # per-user PATH + $PROFILE line, no admin
 # open a new terminal:
-winsetup                            # -> GUI
-winsetup -Profile dotnet -DryRun    # -> CLI
+winsetup                            # -> graphical app
+winsetup -Profile dotnet -DryRun    # -> CLI, every flag forwarded verbatim
 ```
 
-For distribution, publish a self-contained exe (users need no .NET):
-`dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained`.
-Details in [docs/GUI.md](docs/GUI.md).
-
----
-
-## Contents
-
-1. [What it is](#1-what-it-is) · 2. [Requirements](#2-requirements) ·
-3. [Installation](#3-installation) · 4. [Usage](#4-usage) ·
-5. [Profiles](#5-profiles) · 6. [Configuration](#6-configuration) ·
-7. [WSL](#7-wsl) · 8. [Git](#8-git) · 9. [SSH](#9-ssh) ·
-10. [Environment / folders / fonts](#10-environment-variables-folders-fonts) ·
-11. [PowerShell profile](#11-powershell-profile) · 12. [Dotfiles](#12-dotfiles) ·
-13. [Post-install scripts](#13-post-install-scripts) · 14. [Dry-run](#14-dry-run) ·
-15. [Security](#15-security) · 16. [Troubleshooting](#16-troubleshooting) ·
-17. [Developing a component](#17-developing-a-component) · 18. [Testing](#18-testing) ·
-19. [Contributing](#19-contributing)
-
-Deep-dive docs: [Overview / user stories](docs/OVERVIEW.md) ·
-[Architecture](docs/ARCHITECTURE.md) · [GUI](docs/GUI.md) ·
-[Security](docs/SECURITY.md) · [Writing a component](docs/MODULES.md) ·
-[Troubleshooting](docs/TROUBLESHOOTING.md)
-
----
-
-## 1. What it is
-
-| Principle | How WinSetup Pro applies it |
-|---|---|
-| Modular | Every tool/config task is a self-describing **component** file. The core never changes when you add one. |
-| Idempotent | Each component must `Test` before it `Install`/`Configure`s. Nothing is redone. |
-| Declarative | Machines are described in JSON (`config/`, `profiles/`). |
-| Safe by default | No silent overwrites, no credentials stored, no security features disabled. Backups before risky changes. |
-| Observable | Structured, level-based logs per run under `logs/`. |
-| Reversible | A run **journal** allows `-Resume`; risky changes are backed up under `backup/`. |
-| Dry-run first | `-DryRun` prints the plan and touches nothing. |
-
-## 2. Requirements
-
-* Windows 10 (build 19041+) or Windows 11
-* Windows PowerShell 5.1 (bootstrap) — **PowerShell 7 recommended** for daily use
-* `winget` (App Installer) for automated installs
-* Administrator rights **only** for components that change machine scope (each one declares it)
-
-## 3. Installation
+For distribution, publish a self-contained executable (end users need no .NET):
 
 ```powershell
-git clone https://github.com/<you>/WinSetup-Pro.git
-cd WinSetup-Pro
-#  read scripts\bootstrap.ps1 and WinSetup.ps1, then:
-powershell -ExecutionPolicy Bypass -File .\scripts\bootstrap.ps1
+dotnet publish ui\WinSetup.Pro.UI\WinSetup.Pro.UI.csproj -c Release -r win-x64 --self-contained
 ```
 
-`bootstrap.ps1` checks PowerShell / execution policy / winget and then launches
-the local `WinSetup.ps1`. There is intentionally **no `irm … | iex` one-liner**
-— see [Security](#15-security).
+Details in [docs/GUI.md](docs/GUI.md).
 
-## 4. Usage
+## Requirements
+
+- Windows 10 (build 19041+) or Windows 11
+- Windows PowerShell 5.1 for bootstrap — **PowerShell 7 recommended** for daily use
+- [`winget`](https://learn.microsoft.com/windows/package-manager/) (App Installer) for automated installs
+- .NET SDK 10+ **only** to build the desktop app from source
+- Administrator rights **only** for components that change machine scope — each one declares it
+
+## How it works
+
+```
+profile / -Install list
+        │
+        ▼
+   detect  ──▶  plan  ──▶  [confirm]  ──▶  apply  ──▶  journal + logs + backups
+  (read-only Test)      (-DryRun stops here)                 │
+                                                       -Resume continues here
+```
+
+| Layer | Responsibility |
+|---|---|
+| `WinSetup.ps1` | Composition root. Parses the CLI, builds config + context, dispatches to one command. |
+| `modules/Core/` | The engine, imported as a single module: detection, config layering, planning, execution, journal, backups, logging. |
+| `modules/<name>/*.ps1` | Components. Auto-discovered, never imported by name. `Category` is a field, not the folder. |
+| `ui/WinSetup.Pro.UI/` | WPF desktop app (`net10.0-windows`, self-contained). Talks to the engine through a JSON adapter. |
+
+Full design notes — the component contract, the config pipeline, the safety
+model and the extensibility story — are in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Usage
 
 ```powershell
 .\WinSetup.ps1                       # interactive menu
 .\WinSetup.ps1 -Profile minimal      # apply a profile   (alias of -SetupProfile)
 .\WinSetup.ps1 -Profile dotnet -DryRun
 .\WinSetup.ps1 -Install git,nodejs   # just these components
-.\WinSetup.ps1 -WSL                  # one component      (also -Git, -SSH)
+.\WinSetup.ps1 -WSL                  # one feature area   (also -Git, -SSH)
 .\WinSetup.ps1 -Dotfiles "C:\path\to\dotfiles"
-.\WinSetup.ps1 -List                 # list available components
+.\WinSetup.ps1 -List                 # available components
 .\WinSetup.ps1 -Status               # what is installed / configured
 .\WinSetup.ps1 -Diagnose             # host readiness checks
 .\WinSetup.ps1 -Resume               # continue an interrupted run
+.\WinSetup.ps1 -Update               # update managed tools via winget
 ```
 
 Global switches: `-DryRun`, `-NonInteractive`, `-ConfigFile <path>`,
 `-LogLevel <DEBUG|INFO|SUCCESS|WARNING|ERROR>`.
 
-Exit codes: `0` success · `1` completed with failures / checks to address ·
+Exit codes: `0` success · `1` completed with failures or checks to address ·
 `2` fatal error.
 
-## 5. Profiles
+## Profiles
 
-Declarative files in `profiles/`, layered on top of `config/default.json`
-(your `-ConfigFile` layers on top of that; `-Install` overrides the app list
-entirely).
+Declarative files in `profiles/`, layered on top of `config/default.json`. Your
+`-ConfigFile` layers on top of that; `-Install` overrides the app list entirely.
 
-| Profile | For | Highlights |
+| Profile | For | Adds on top of the previous row |
 |---|---|---|
 | `minimal` | any developer | git, PowerShell 7, Windows Terminal, VS Code, GitHub CLI |
-| `frontend` | web / front-end | + Node.js, npm, pnpm, Python, profile, Cascadia + Fira Code |
-| `dotnet` | .NET | + Visual Studio, .NET SDK, Docker, Azure CLI, sqlcmd, Azure Data Studio, WSL |
-| `fullstack` | web + services | + PostgreSQL, Redis, mongosh, Docker, WSL |
-| `enterprise` | standardised corp workstation | + AWS/gcloud/Terraform/kubectl/Helm, Java, SSH, `PSReadLine`, more fonts |
+| `frontend` | web / front-end | Node.js, npm, pnpm, Python, PowerShell profile, Cascadia + Fira Code |
+| `dotnet` | .NET | Visual Studio, .NET SDK, Docker, Azure CLI, sqlcmd, Azure Data Studio, WSL |
+| `fullstack` | web + services | PostgreSQL, Redis, mongosh, Docker, WSL |
+| `enterprise` | standardised corp workstation | AWS / gcloud / Terraform / kubectl / Helm, Java, SSH, PSReadLine, more fonts |
 
 ```jsonc
 // profiles/minimal.json
@@ -154,11 +190,11 @@ entirely).
 Component ids that a profile lists but this build does not provide are
 **reported and skipped**, never failed.
 
-## 6. Configuration
+## Configuration
 
-`config/default.json` is the base document (validated against
-`config/schema.json`). Every key can be overridden by a profile or a user
-config file passed with `-ConfigFile`:
+`config/default.json` is the base document, validated against
+`config/schema.json`. Every key can be overridden by a profile or by a user
+config passed with `-ConfigFile`:
 
 ```jsonc
 {
@@ -175,113 +211,84 @@ Layering: `config/default.json ← profiles/<name>.json ← -ConfigFile ← -Ins
 Nested objects deep-merge; `applications` / `fonts` / `folders` union without
 duplicates; other values are replaced.
 
-WinSetup Pro **never** asks for `user.name` / `user.email`; set `git.userName` /
+WinSetup Pro **never** asks for `user.name` / `user.email`. Set `git.userName` /
 `git.userEmail` in config if you want a *missing* identity filled in — an
 existing one is never overwritten.
 
-## 7. WSL
+## What it sets up
 
-`.\WinSetup.ps1 -WSL` (or `wsl.enabled` in a profile — needs an elevated
-session):
+<details>
+<summary><strong>Applications</strong> — 30+ tools via winget, official sources only</summary>
 
-* enables the **WSL** and **Virtual Machine Platform** features
-  (`wsl --install --no-distribution`, DISM fallback) and tells you to restart;
-* runs `wsl --set-default-version 2` when `wsl.setDefaultVersion2` (default);
-* installs `wsl.distribution` (validated against `wsl --list --online`, with
-  `--no-launch`); with no distribution set, an interactive run shows a menu;
-* writes `~/.wslconfig` from `wsl.wslConfig` **only if the file does not exist**
-  — an existing one is left untouched unless `wsl.overwriteWslConfig: true`
-  (and is backed up first);
-* **never** unregisters, resets or overwrites an existing distribution.
+Editors and runtimes (VS Code, Visual Studio, JetBrains Toolbox, Neovim, .NET
+SDK, Node.js + npm + pnpm, Python, Go, Rust, Java), cloud CLIs (Azure, AWS,
+gcloud, Terraform, kubectl, Helm), databases and clients (PostgreSQL, MySQL,
+Redis, mongosh, MongoDB tools, SQL Server tools, Azure Data Studio),
+containers (Docker Desktop), build tools (CMake, Ninja) and the base developer
+set (Git, PowerShell 7, Windows Terminal, GitHub CLI). Each component detects
+its own presence and version; already-installed tools are skipped.
+</details>
 
-```jsonc
-"wsl": {
-  "enabled": true,
-  "distribution": "Ubuntu",
-  "setDefaultVersion2": true,
-  "wslConfig": { "memory": "6GB", "processors": 4, "swap": "0" }
-}
-```
+<details>
+<summary><strong>WSL 2</strong></summary>
 
-## 8. Git
+`-WSL` (or `wsl.enabled` in a profile; needs an elevated session) enables the
+WSL and Virtual Machine Platform features, sets default version 2, and installs
+a validated distribution with `--no-launch`. `~/.wslconfig` is written **only if
+absent** (unless `wsl.overwriteWslConfig: true`, which backs it up first). An
+existing distribution is **never** unregistered, reset or overwritten.
+</details>
 
-The `git` component installs Git via winget and applies an idempotent global
-config (`init.defaultBranch`, `pull.rebase`, `credential.helper`, `core.editor`).
-It **never overwrites** an existing `user.name` / `user.email`, and it backs up
-`~/.gitconfig` (to `backup/git/`) before the first change. Authentication is
-delegated to Git Credential Manager / SSH / GitHub CLI — no passwords stored.
+<details>
+<summary><strong>Git</strong></summary>
 
-## 9. SSH
+Installs Git and applies an idempotent global config (`init.defaultBranch`,
+`pull.rebase`, `credential.helper`, `core.editor`). It **never overwrites** an
+existing `user.name` / `user.email`, and backs up `~/.gitconfig` before the
+first change. Authentication is delegated to Git Credential Manager / SSH /
+GitHub CLI — no passwords stored.
+</details>
 
-`.\WinSetup.ps1 -SSH` (or `ssh.enabled` in a profile):
+<details>
+<summary><strong>SSH</strong></summary>
 
-* detects the OpenSSH client; installs it via the Windows capability when
-  missing (needs an elevated session);
-* discovers existing keys in `~/.ssh` and **never overwrites or regenerates
-  them**;
-* offers to create a key only when none exists — interactively (`ssh-keygen`
-  then prompts for a passphrase), or unattended only if
-  `ssh.generateKeyUnattended: true` (which warns the key has no passphrase);
-* `ssh.providers: ["github.com", "gitlab.com", …]` appends the **missing**
-  `~/.ssh/config` Host blocks (never rewrites existing ones) after backing the
-  file up, and locks down permissions with `icacls`;
-* never stores a passphrase or password.
+`-SSH` (or `ssh.enabled`) installs the OpenSSH client when missing, discovers
+existing keys in `~/.ssh` and **never overwrites or regenerates them**, and
+offers to create a key only when none exists. `ssh.providers` appends the
+**missing** `~/.ssh/config` Host blocks after a backup, and locks permissions
+down with `icacls`. No passphrase or password is ever stored.
+</details>
 
-## 10. Environment variables, folders, fonts
+<details>
+<summary><strong>Environment variables, folders, fonts</strong></summary>
 
-* **`env-vars`** — applies `environment.user` / `environment.machine` (machine
-  scope needs elevation) and appends `environment.path` entries to the **User**
-  PATH, de-duplicated (case-insensitive). Previous values are snapshotted to
-  `backup/environment/`.
-* **`folders`** — creates the `folders` tree under your user profile; only ever
-  creates, never deletes.
-* **`fonts`** — per-user install (no admin) of Cascadia Code / Mono, JetBrains
-  Mono and Fira Code from their **official GitHub releases**; already-installed
-  families are skipped.
+`env-vars` applies `environment.user` / `environment.machine` and appends
+de-duplicated entries to the **User** PATH (previous values snapshotted to
+`backup/environment/`). `folders` creates the `folders` tree under your profile
+— only ever creates, never deletes. `fonts` does a per-user install (no admin)
+of Cascadia Code / Mono, JetBrains Mono and Fira Code from their official GitHub
+releases.
+</details>
 
-These run automatically when a profile/config gives them work; otherwise they
-report "nothing to do" and are skipped.
+<details>
+<summary><strong>PowerShell profile and dotfiles</strong></summary>
 
-## 11. PowerShell profile
+`powershellProfile.enabled` copies the requested fragments into
+`<profile dir>\winsetup-pro\` and keeps **one marked block** in your `$PROFILE`
+that loads them; everything outside the markers is left untouched and the
+profile is backed up first. `-Dotfiles <path>` / `-DotfilesRepository <url>`
+maps each file to `$HOME`, replacing only when it differs and backing up the
+original first. Nothing is ever deleted.
+</details>
 
-`powershellProfile.enabled` (or `-Install powershell-profile`). WinSetup Pro
-copies the requested fragments into `<profile dir>\winsetup-pro\` and keeps
-**one marked block** in your `$PROFILE` that loads them:
+<details>
+<summary><strong>Post-install scripts</strong></summary>
 
-```
-# >>> WinSetup Pro managed block >>>
-#   loads winsetup-pro\{aliases,functions,prompt,git,docker,environment}.ps1
-# <<< WinSetup Pro managed block <<<
-```
+`postInstall.scripts` runs **local** `.ps1` files last, each recorded by content
+hash so an unchanged script is not re-run. Remote scripts are never fetched.
+</details>
 
-Everything outside the markers is left exactly as it was; the profile is backed
-up (to `backup/powershell/`) before the block is first written.
-`powershellProfile.modules` (e.g. `["PSReadLine", "Terminal-Icons"]`) are
-installed with `Install-Module -Scope CurrentUser`.
-
-## 12. Dotfiles
-
-```powershell
-.\WinSetup.ps1 -Dotfiles "C:\Users\me\dotfiles"
-.\WinSetup.ps1 -DotfilesRepository "https://github.com/me/dotfiles.git"
-```
-
-* a repo is cloned into `state/dotfiles/`; a folder is used in place;
-* each file maps to the same relative path under `$HOME` (or use `dotfiles.map`)
-  and is only replaced when it differs;
-* before replacing, the existing file is backed up to
-  `backup/dotfiles/<timestamp>/` — always in `-NonInteractive`, or via a
-  **Yes / No / Skip** prompt (`dotfiles.backupExisting: prompt | always | never`);
-* nothing is ever deleted; `dotfiles.link: symlink` is available (falls back to
-  copy if it can't create the link).
-
-## 13. Post-install scripts
-
-`postInstall.scripts: ["scripts/my-finish.ps1"]` — **local** `.ps1` files run
-after the rest, each recorded by content hash so an unchanged script is not
-re-run (`postInstall.always: true` to force). Remote scripts are never fetched.
-
-## 14. Dry-run
+## Dry-run and safety
 
 `-DryRun` runs every component's read-only `Test`, prints the intended
 `INSTALL` / `CONFIGURE` actions (admin-only components flagged *needs
@@ -293,32 +300,30 @@ Profile : dotnet
 Plan    : git, pwsh, windows-terminal, vscode, visualstudio, dotnet-sdk, ...
 Mode    : DRY RUN
 
-[1/12] Git ............................... [SKIP]  already present (v2.55.0)
-[7/12] Node.js .......................... [DRY ]  INSTALL
+[1/12]  Git ............................. [SKIP]  already present (v2.55.0)
+[7/12]  Node.js ......................... [DRY ]  INSTALL
 [11/12] Docker Desktop .................. [DRY ]  INSTALL + CONFIGURE (needs elevation)
 ...
 DRY RUN - no changes were made.
   Planned : 6   Installed : 0   Failed : 0
 ```
 
-## 15. Security
+The safety model, in short — full detail in [docs/SECURITY.md](docs/SECURITY.md):
 
-Full detail in [docs/SECURITY.md](docs/SECURITY.md). In short:
-
-* **No remote code execution** — `bootstrap.ps1` only prepares prerequisites and
+- **No remote code execution.** `bootstrap.ps1` only prepares prerequisites and
   runs the local, reviewable `WinSetup.ps1`. No `irm | iex`.
-* **Official sources only** — `winget` (default source) or the Microsoft Store;
+- **Official sources only.** `winget` (default source) or the Microsoft Store;
   fonts from official GitHub releases. No arbitrary downloads.
-* **No secrets** — nothing asks for, prints, logs or stores a password, token or
+- **No secrets.** Nothing asks for, prints, logs or stores a password, token or
   passphrase.
-* **Non-destructive** — detect, back up, then change; SSH keys, Git identity and
+- **Non-destructive.** Detect, back up, then change. SSH keys, Git identity and
   existing `$PROFILE` / `.wslconfig` / `.ssh/config` content are never
   overwritten.
-* **Least privilege** — only the components that must, request elevation, and
-  each says why; the execution policy is relaxed for the current process only.
-* Windows Defender, the firewall and security policy are **never** touched.
+- **Least privilege.** Only the components that must, request elevation, and
+  each says why. The desktop app runs non-elevated.
+- Windows Defender, the firewall and security policy are **never** touched.
 
-## 16. Troubleshooting
+## Troubleshooting
 
 Full table in [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The quick hits:
 
@@ -331,80 +336,94 @@ Full table in [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The quick hits
 | A run stopped half-way | `.\WinSetup.ps1 -Resume` |
 | Need detail | newest file in `logs/`, or `-LogLevel DEBUG` |
 
-## 17. Developing a component
+## Project layout
 
-Full guide: [docs/MODULES.md](docs/MODULES.md). Copy
-`modules/Applications/_Template.ps1` to `modules/<Category>/<Name>.ps1`; the
-file **returns** a descriptor and has **no side effects at load time**.
-
-```powershell
-New-WinSetupComponent -Id 'ripgrep' -Name 'ripgrep' -Category 'Development' `
-    -Description 'Fast recursive search (rg)' `
-    -Test {
-        param($Context)
-        $v = Get-WinSetupExeVersion -Command 'rg'
-        if (-not $v) { return New-WinSetupDetectionResult -Installed $false }
-        New-WinSetupDetectionResult -Installed $true -Version $v -Summary "rg $v"
-    } `
-    -Install {
-        param($Context)
-        Install-WinSetupWingetPackage -Id 'BurntSushi.ripgrep.MSVC' -VerifyCommand 'rg'
-    }
+```
+WinSetup.ps1            Composition root / CLI
+modules/Core/           The engine, loaded as one module (Core.psm1)
+modules/<name>/         Component files, auto-discovered (Category is a field)
+config/                default.json + schema.json + example configs
+profiles/              Declarative install profiles
+scripts/               bootstrap / install / update / uninstall / diagnose / gui
+launcher/              The global `winsetup` command (PowerShell module + PATH shims)
+ui/WinSetup.Pro.UI/     WPF desktop app (net10.0-windows, self-contained)
+templates/powershell/   PowerShell profile fragments
+tests/unit/             Pester unit specs (TestDrive only, host-safe)
+tests/integration/      Real-install specs, tagged 'Integration', opt-in
+docs/                  Architecture · GUI · Security · Modules · Troubleshooting · Overview
 ```
 
-Contract: `Test` is read-only and returns `New-WinSetupDetectionResult`;
-`Install` / `Configure` **throw** on failure (the engine handles
-retry/skip/abort); set `-RequiresAdmin $true` for machine-scope work,
-`-Critical $true` to abort the run on failure; order with
-`-DependsOn @('other-id')`.
-
-## 18. Testing
+## Development
 
 ```powershell
-Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0 -Force -SkipPublisherCheck   # once
+# once
+Install-Module Pester -Scope CurrentUser -MinimumVersion 5.5.0 -Force -SkipPublisherCheck
 
-pwsh -File .\tests\RunTests.ps1                       # unit suite (117 tests)
-pwsh -File .\tests\RunTests.ps1 -Suite all -CI        # + JUnit results in logs\
-pwsh -File .\tests\RunTests.ps1 -Coverage             # + code coverage
+pwsh -File .\tests\RunTests.ps1                    # unit suite (117 tests, host-safe)
+pwsh -File .\tests\RunTests.ps1 -Suite all -CI     # + JUnit results in logs\
+pwsh -File .\tests\RunTests.ps1 -Coverage          # + code coverage
 $env:WINSETUP_ALLOW_INTEGRATION = '1'
-pwsh -File .\tests\RunTests.ps1 -Suite integration    # real winget install/uninstall
+pwsh -File .\tests\RunTests.ps1 -Suite integration # real winget install/uninstall
 ```
 
-Works on Pester 5 and 6. **Unit tests never modify the host** — `TestDrive:`,
-in-memory registries, synthetic components, redirections restored in `finally`.
-They cover: software detection, install idempotency (a plan run 2-3×), PATH &
-environment variables, folder creation, backups, Git config, WSL detection,
-dry-run, the error policy, and journal / `-Resume`.
+Unit tests never modify the host — `TestDrive:`, in-memory registries, synthetic
+components, redirections restored in `finally`. They run on Pester 5 and 6.
 
-Integration tests (`tests/integration/`, tagged `Integration`) install a real
-package and **self-skip** unless `WINSETUP_ALLOW_INTEGRATION=1`; they remove
-only what they installed.
+**Adding a component:** copy `modules/Applications/_Template.ps1`, implement
+`Test` (read-only) and `Install` / `Configure` (throw on failure), and return
+the descriptor as the file's last statement — no side effects at load time. The
+full contract, lifecycle and helper reference are in
+[docs/MODULES.md](docs/MODULES.md).
 
-CI (`.github/workflows/ci.yml`) runs the syntax check, PSScriptAnalyzer and the
-unit suite on `windows-latest`.
-
-## 19. Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/MODULES.md](docs/MODULES.md).
+**CI** (`.github/workflows/ci.yml`) runs on every push and PR: parse check,
+PSScriptAnalyzer, the GUI build, and the unit suite on `windows-latest`.
 
 ## Roadmap
 
 | Phase | Scope | State |
 |---|---|---|
-| 1 | Core engine, CLI, logging, config, dry-run, status, journal/resume | **done** |
-| 2 | pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker Desktop | **done** |
-| 3 | Azure/AWS/gcloud/Terraform/kubectl/Helm CLIs · SSH · environment variables · folders · fonts | **done** |
-| 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | **done** |
-| 5 | Modular PowerShell profile · dotfiles · consolidated backups · post-install scripts | **done** |
-| 6 | Full profile set + 15 more components (VS, JetBrains, Go, Rust, Java, CMake/Ninja, Neovim, SQL/Postgres/MySQL/Redis/Mongo) | **done** |
-| 7 | 80-test Pester suite (unit + idempotency + resume), integration scaffold, GitHub Actions CI | **done** |
-| 8 | Documentation set (README, Architecture, Security, Modules, Troubleshooting) | **done** |
+| 1 | Core engine, CLI, logging, config, dry-run, status, journal / resume | ✅ done |
+| 2 | pwsh, Windows Terminal, VS Code, GitHub CLI, .NET SDK, Node.js, npm, pnpm, Python, Docker | ✅ done |
+| 3 | Cloud CLIs (Azure/AWS/gcloud/Terraform/kubectl/Helm) · SSH · env vars · folders · fonts | ✅ done |
+| 4 | WSL 2 module (features, default version, `.wslconfig`, distributions) | ✅ done |
+| 5 | Modular PowerShell profile · dotfiles · consolidated backups · post-install scripts | ✅ done |
+| 6 | Full profile set + 15 more components (VS, JetBrains, Go, Rust, Java, CMake/Ninja, Neovim, SQL/Postgres/MySQL/Redis/Mongo) | ✅ done |
+| 7 | 100+-test Pester suite (unit + idempotency + resume), integration scaffold, GitHub Actions CI | ✅ done |
+| 8 | Documentation set (README, Architecture, Security, Modules, Troubleshooting) | ✅ done |
+| — | **WPF desktop app** over the same engine API | ✅ done |
 
-**Next (post-0.1.0):** GUI/TUI front ends over the same engine API · remote /
-multi-machine execution · YAML config · a component marketplace. The core is
-designed so these do not require a rewrite — see
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §10.
+**Next (post-0.1.0):** publish to winget · remote / multi-machine execution ·
+YAML config · a component marketplace. The core is designed so these do not
+require a rewrite — see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §10.
+
+## Versioning
+
+Releases follow [Semantic Versioning](https://semver.org/). User-visible changes
+are recorded in [CHANGELOG.md](CHANGELOG.md); phases 1–8 constitute `0.1.0`. To
+cut a release, move the `[Unreleased]` entries under a dated `[x.y.z]` heading
+and tag `vX.Y.Z`.
+
+## Contributing
+
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and
+[docs/MODULES.md](docs/MODULES.md). In short: keep changes modular, idempotent
+and host-safe; official sources only; the core is closed for modification — new
+tools are new component files. CI must be green and PRs should include the
+`RunTests.ps1` summary line.
+
+## Security
+
+Please report vulnerabilities privately rather than in a public issue — see
+[docs/SECURITY.md](docs/SECURITY.md) for the reporting process and the full
+threat model.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+[MIT](LICENSE) © 2026 WinSetup Pro contributors.
+
+## Acknowledgements
+
+Built on [PowerShell](https://github.com/PowerShell/PowerShell),
+[Pester](https://pester.dev/), the
+[Windows Package Manager](https://github.com/microsoft/winget-cli) and WPF on
+.NET. Icons use Segoe Fluent Icons.

@@ -40,7 +40,7 @@ the helper reference and common pitfalls.
 4. No side effects at load time.
 5. Add a Pester spec if detection/config is non-trivial.
 6. If a profile should use it, add the id to `profiles/<name>.json` and mention
-   it in the profile table in `README.md` §5.
+   it in the profile table in `README.md` (the **Profiles** section).
 
 ## Coding style
 
@@ -70,7 +70,7 @@ synthetic components; restore any `$env:*` / `$global:*` redirection in
 
 * One topic per file; connected prose, not scratch notes.
 * Update `CHANGELOG.md` under the current heading for every user-visible change.
-* Keep `README.md` §5 (profile table) and the roadmap in sync with reality.
+* Keep the `README.md` profile table and roadmap in sync with reality.
 
 ## Commit / PR
 
